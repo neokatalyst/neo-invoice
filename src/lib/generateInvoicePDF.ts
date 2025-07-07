@@ -1,29 +1,25 @@
-import * as Print from 'expo-print'
-import * as FileSystem from 'expo-file-system'
+// lib/generateInvoicePdf.ts
+import jsPDF from 'jspdf'
 
-export async function generateInvoicePDF(invoice: {
+export function generateInvoicePdf(invoice: {
   client_name: string
   client_email: string
   amount: number
+  status: string
   created_at: string
 }) {
-  const html = `
-    <html>
-      <body style="font-family: Arial; padding: 24px;">
-        <h1>Invoice</h1>
-        <p><strong>Client:</strong> ${invoice.client_name}</p>
-        <p><strong>Email:</strong> ${invoice.client_email}</p>
-        <p><strong>Amount:</strong> R${invoice.amount}</p>
-        <p><strong>Date:</strong> ${new Date(invoice.created_at).toLocaleDateString()}</p>
-      </body>
-    </html>
-  `
+  const doc = new jsPDF()
 
-  const { uri } = await Print.printToFileAsync({ html })
+  doc.setFontSize(16)
+  doc.text('Invoice', 10, 20)
 
-  // Copy PDF to app cache dir for upload
-  const fileUri = `${FileSystem.cacheDirectory}invoice-${Date.now()}.pdf`
-  await FileSystem.copyAsync({ from: uri, to: fileUri })
+  doc.setFontSize(12)
+  doc.text(`Client: ${invoice.client_name}`, 10, 40)
+  doc.text(`Email: ${invoice.client_email}`, 10, 50)
+  doc.text(`Amount: R${invoice.amount}`, 10, 60)
+  doc.text(`Status: ${invoice.status}`, 10, 70)
+  doc.text(`Date: ${new Date(invoice.created_at).toLocaleString()}`, 10, 80)
 
-  return fileUri
+  return doc
 }
+
