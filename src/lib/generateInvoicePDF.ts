@@ -1,4 +1,4 @@
-// lib/generateInvoicePdf.ts
+// src/lib/generateInvoicePdf.ts
 import jsPDF from 'jspdf'
 
 export function generateInvoicePdf(invoice: {
@@ -22,4 +22,3 @@ export function generateInvoicePdf(invoice: {
 
   return doc
 }
-

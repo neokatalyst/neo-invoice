@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { generateInvoicePdf } from '@/lib/generateInvoicePdf'
+import { generateInvoicePdf } from '@/lib/generateInvoicePDF'
 import { generateAndUploadInvoicePdf } from '@/lib/uploadInvoicePdf'
 
 export default function DashboardPage() {
@@ -55,6 +55,8 @@ export default function DashboardPage() {
                   Download PDF
                 </button>
 
+                
+
                 <button
                   onClick={async () => {
                     try {
@@ -69,6 +71,18 @@ export default function DashboardPage() {
                 >
                   Upload to Supabase
                 </button>
+
+                {invoice.pdf_url && (
+  <a
+    href={invoice.pdf_url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="mt-2 inline-block px-4 py-1 bg-gray-700 text-white rounded hover:bg-gray-800"
+  >
+    View Invoice
+  </a>
+)}
+
               </div>
             </div>
           ))}
