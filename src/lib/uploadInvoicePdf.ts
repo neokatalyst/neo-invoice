@@ -3,7 +3,7 @@ import jsPDF from 'jspdf'
 
 export async function generateAndUploadInvoicePdf(invoice: any) {
   try {
-    // 1. Generate the invoice PDF
+    // 1. Generate the invoice PDF using jsPDF
     const doc = new jsPDF()
     doc.setFontSize(16)
     doc.text('Invoice', 10, 20)
@@ -14,13 +14,16 @@ export async function generateAndUploadInvoicePdf(invoice: any) {
     doc.text(`Status: ${invoice.status}`, 10, 70)
     doc.text(`Date: ${new Date(invoice.created_at).toLocaleString()}`, 10, 80)
 
-    // 2. Convert to Blob
+    // 2. Convert PDF to Blob
     const blob = doc.output('blob')
+    const filename = `invoices/invoice-${invoice.client_name.toLowerCase().replace(/\s+/g, '_')}-${invoice.id}-${new Date(invoice.created_at).getTime()}.pdf`
 
-    const cleanName = invoice.client_name.replace(/\s+/g, '_').toLowerCase()
-    const filename = `invoice-${cleanName}-${invoice.id}-${Date.now()}.pdf`
 
     // 3. Upload to Supabase Storage
+    console.log('📤 Attempting to upload PDF to Supabase Storage')
+    console.log('🧾 File name:', filename)
+    console.log('🗂 Bucket: invoices')
+
     const uploadResponse = await supabase.storage
       .from('invoices')
       .upload(filename, blob, {
@@ -29,7 +32,13 @@ export async function generateAndUploadInvoicePdf(invoice: any) {
         upsert: true,
       })
 
+    console.log('📦 Full upload response:', JSON.stringify(uploadResponse, null, 2))
+
+    // 4. Validate upload response
     if (!uploadResponse?.data) {
+      console.error('❌ No upload data returned')
+      console.warn('ℹ️ Upload response object:', JSON.stringify(uploadResponse, null, 2))
+
       if (uploadResponse?.error) {
         console.error('❌ Upload error:', JSON.stringify(uploadResponse.error, null, 2))
         throw new Error(uploadResponse.error.message ?? 'Unknown upload error')
@@ -38,30 +47,33 @@ export async function generateAndUploadInvoicePdf(invoice: any) {
       }
     }
 
-    // 4. Generate a signed URL (valid for 1 week = 604800 seconds)
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    // 5. Get the public URL of the uploaded file
+    const { data: urlData, error: urlError } = supabase
+      .storage
       .from('invoices')
-      .createSignedUrl(filename, 604800)
+      .getPublicUrl(filename)
 
-    if (signedUrlError || !signedUrlData?.signedUrl) {
-      console.error('❌ Signed URL error:', signedUrlError)
-      throw new Error('Failed to create signed URL for uploaded PDF')
+    if (urlError || !urlData?.publicUrl) {
+      console.error('⚠️ URL retrieval error:', urlError)
+      throw new Error('Could not retrieve public URL for uploaded PDF')
     }
 
-    // 5. Update the invoice with the signed URL
+    // 6. Update invoice record
     const { error: updateError } = await supabase
       .from('invoices')
-      .update({ pdf_url: signedUrlData.signedUrl })
+      .update({ pdf_url: urlData.publicUrl })
       .eq('id', invoice.id)
 
     if (updateError) {
       console.error('❌ DB update error:', updateError)
-      throw new Error('Failed to update invoice with signed PDF URL')
+      throw new Error('Failed to update invoice with PDF URL')
     }
 
-    return signedUrlData.signedUrl
+    console.log('✅ PDF uploaded and invoice record updated successfully')
+    return urlData.publicUrl
+
   } catch (err) {
-    console.error('🔥 Error in generateAndUploadInvoicePdf:', err)
+    console.error('🔥 Unhandled error in generateAndUploadInvoicePdf:', err)
     throw err
   }
 }

@@ -55,15 +55,13 @@ export default function DashboardPage() {
                   Download PDF
                 </button>
 
-                
-
                 <button
                   onClick={async () => {
                     try {
                       const url = await generateAndUploadInvoicePdf(invoice)
-                      alert('PDF uploaded!\n' + url)
+                      alert('✅ PDF uploaded!\n' + url)
                     } catch (err) {
-                      console.error('Upload failed:', err)
+                      console.error('❌ Upload failed:', err)
                       alert('Error uploading PDF')
                     }
                   }}
@@ -73,16 +71,37 @@ export default function DashboardPage() {
                 </button>
 
                 {invoice.pdf_url && (
-  <a
-    href={invoice.pdf_url}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="mt-2 inline-block px-4 py-1 bg-gray-700 text-white rounded hover:bg-gray-800"
-  >
-    View Invoice
-  </a>
-)}
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/getSignedUrl', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            path: `invoices/invoice-${invoice.client_name
+                              .toLowerCase()
+                              .replace(/\s+/g, '_')}-${invoice.id}-${new Date(
+                              invoice.created_at
+                            ).getTime()}.pdf`,
+                          }),
+                        })
 
+                        const { url } = await res.json()
+                        if (url) {
+                          window.open(url, '_blank')
+                        } else {
+                          throw new Error('Signed URL not returned')
+                        }
+                      } catch (err) {
+                        console.error('Failed to open signed URL:', err)
+                        alert('Could not open invoice PDF')
+                      }
+                    }}
+                    className="mt-2 inline-block px-4 py-1 bg-gray-700 text-white rounded hover:bg-gray-800"
+                  >
+                    View Invoice
+                  </button>
+                )}
               </div>
             </div>
           ))}
