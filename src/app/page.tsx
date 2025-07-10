@@ -1,20 +1,12 @@
-"use client"
+'use client'
 
-import Link from "next/link"
+import Header from '@/components/Header'
+import Link from 'next/link'
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 text-black">
-      <header className="w-full py-6 bg-white shadow-md">
-        <div className="max-w-4xl mx-auto px-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-black">Neo-Invoice</h1>
-          <nav className="space-x-4">
-          <Link href="/" className="text-black hover:text-blue-600">Home</Link>
-          <Link href="/capture" className="text-black hover:text-blue-600">Capture</Link>
-          <Link href="/dashboard" className="text-black hover:text-blue-600">Dashboard</Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="flex-grow flex flex-col items-center justify-center text-center px-4">
         <h2 className="text-4xl font-semibold mb-4">Welcome to Neo-Invoice</h2>

@@ -1,5 +1,4 @@
-'use client'
-
+// lib/useAuthRedirect.ts
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from './supabaseClient'
@@ -10,17 +9,17 @@ export function useAuthRedirect() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-      const publicRoutes = ['/signin', '/signup']
-      const isPublic = publicRoutes.includes(pathname)
+      const publicRoutes = ['/', '/signin', '/signup']
 
-      if (!user && !isPublic) {
-        // Not logged in, trying to access a protected route
+      if (user && pathname === '/') {
+        // Optional: route authenticated users away from landing page
+        router.push('/dashboard') // or '/capture'
+      } else if (!user && !publicRoutes.includes(pathname)) {
         router.push('/signin')
-      } else if (user && isPublic) {
-        // Logged in, trying to access sign-in or sign-up
-        router.push('/layout') // ✅ Only redirect to dashboard
       }
     }
 
