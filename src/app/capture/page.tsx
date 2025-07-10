@@ -1,13 +1,16 @@
 'use client'
 
-import { useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
+import { useAuthRedirect } from '@/lib/useAuthRedirect'
 import Header from '@/components/Header'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
 export default function CapturePage() {
+  useAuthRedirect() // ✅ apply redirect protection
+
   const [formData, setFormData] = useState({
     client_name: '',
     client_email: '',

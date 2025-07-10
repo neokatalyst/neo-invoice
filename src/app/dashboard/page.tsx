@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
+import { useAuthRedirect } from '@/lib/useAuthRedirect'
 import { generateInvoicePdf } from '@/lib/generateInvoicePDF'
 import { generateAndUploadInvoicePdf } from '@/lib/uploadInvoicePdf'
 import Header from '@/components/Header'
@@ -9,6 +11,7 @@ import toast from 'react-hot-toast'
 import { FaDownload, FaUpload, FaEye } from 'react-icons/fa'
 
 export default function DashboardPage() {
+  useAuthRedirect() // ✅ Called at top of component
   const [invoices, setInvoices] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loadingInvoiceId, setLoadingInvoiceId] = useState<string | null>(null)
