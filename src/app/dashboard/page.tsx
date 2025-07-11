@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthRedirect } from '@/lib/useAuthRedirect'
 import { generateInvoicePdf } from '@/lib/generateInvoicePDF'
@@ -11,7 +10,8 @@ import toast from 'react-hot-toast'
 import { FaDownload, FaUpload, FaEye } from 'react-icons/fa'
 
 export default function DashboardPage() {
-  useAuthRedirect() // ✅ Called at top of component
+  useAuthRedirect() // Redirect if not authenticated
+
   const [invoices, setInvoices] = useState<any[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loadingInvoiceId, setLoadingInvoiceId] = useState<string | null>(null)
@@ -28,26 +28,22 @@ export default function DashboardPage() {
         toast.error('Failed to fetch invoices')
       }
     }
-
     fetchInvoices()
   }, [])
 
-  // Summary stats
   const totalInvoices = invoices.length
   const paidInvoices = invoices.filter(i => i.status === 'paid').length
   const unpaidInvoices = invoices.filter(i => i.status === 'unpaid').length
 
-  // Handler for download PDF
   const handleDownload = (invoice: any) => {
     const doc = generateInvoicePdf(invoice)
     doc.save(`invoice-${invoice.id}.pdf`)
   }
 
-  // Handler for upload PDF
   const handleUpload = async (invoice: any) => {
     setLoadingInvoiceId(invoice.id)
     try {
-      const url = await generateAndUploadInvoicePdf(invoice)
+      await generateAndUploadInvoicePdf(invoice)
       toast.success('PDF uploaded successfully!')
     } catch (err) {
       console.error('Upload failed:', err)
@@ -57,7 +53,6 @@ export default function DashboardPage() {
     }
   }
 
-  // Handler for view PDF (signed URL)
   const handleView = async (invoice: any) => {
     try {
       const res = await fetch('/api/getSignedUrl', {
@@ -81,6 +76,49 @@ export default function DashboardPage() {
     } catch (err) {
       console.error('Failed to open signed URL:', err)
       toast.error('Could not open invoice PDF')
+    }
+  }
+
+  const handleSendEmail = async (invoice: any) => {
+    try {
+      // Generate signed URL for PDF
+      const pdfPath = `invoices/invoice-${invoice.client_name
+        .toLowerCase()
+        .replace(/\s+/g, '_')}-${invoice.id}-${new Date(invoice.created_at).getTime()}.pdf`
+
+      const resSigned = await fetch('/api/getSignedUrl', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: pdfPath }),
+      })
+
+      const { url: pdfUrl } = await resSigned.json()
+      if (!pdfUrl) throw new Error('PDF URL not found')
+
+      const htmlContent = `
+        <p>Dear ${invoice.client_name},</p>
+        <p>Please find your invoice for <strong>R${invoice.amount}</strong> at the link below:</p>
+        <p><a href="${pdfUrl}" target="_blank" style="color: blue;">View Invoice</a></p>
+        <p>Thank you,<br/>${invoice.company_name || 'Neo-Invoice'}</p>
+      `
+
+      const res = await fetch('/api/sendInvoiceEmail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: invoice.client_email,
+          subject: `Invoice from ${invoice.company_name || 'Neo-Invoice'}`,
+          html: htmlContent,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+
+      toast.success('Invoice email sent!')
+    } catch (err) {
+      console.error('Email error:', err)
+      toast.error('Failed to send invoice email')
     }
   }
 
@@ -145,6 +183,14 @@ export default function DashboardPage() {
                   >
                     <FaUpload className="mr-2" />
                     {loadingInvoiceId === invoice.id ? 'Uploading...' : 'Upload'}
+                  </button>
+
+                  <button
+                    onClick={() => handleSendEmail(invoice)}
+                    className="flex items-center px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
+                    title="Send Invoice Email"
+                  >
+                    📧 Send Email
                   </button>
 
                   {invoice.pdf_url && (
