@@ -1,18 +1,13 @@
-'use client'
-
+// /pages/profile/edit-profile.tsx (Edit Profile)
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import Header from '@/components/Header'
-import { useAuthRedirect } from '@/lib/useAuthRedirect'
+import Link from 'next/link'; // Ensure this is included
 
-import Link from 'next/link'; // Import Link for navigation
-
-export default function ProfilePage() {
-  useAuthRedirect() // This ensures the user is authenticated
+const EditProfilePage = () => {
   const router = useRouter()
-
   const [profile, setProfile] = useState({
     first_name: '',
     last_name: '',
@@ -29,39 +24,24 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      setLoading(true)
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
 
-      if (!currentUser) {
-        setLoading(false)
-        router.push('/signin') // Redirect to sign in page if no user
+      if (!user) {
+        router.push('/signin') // Redirect to login page if not logged in
         return
       }
 
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', currentUser.id)
+        .eq('id', user.id)
         .single()
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         setError(error.message)
-      } else if (data) {
-        setProfile({
-          first_name: data.first_name || '',
-          last_name: data.last_name || '',
-          full_name: data.full_name || '',
-          company_name: data.company_name || '',
-          phone: data.phone || '',
-          address: data.address || '',
-          vat_number: data.vat_number || '',
-          logo_url: data.logo_url || '',
-        })
+      } else {
+        setProfile(data)
       }
-
-      setLoading(false)
     }
 
     fetchProfile()
@@ -107,7 +87,7 @@ export default function ProfilePage() {
       toast.error(updateError.message)
     } else {
       toast.success('Profile updated successfully')
-      router.push('/dashboard') // Redirect after successful update
+      router.push('/profile') // Redirect to View Profile after update
     }
 
     setLoading(false)
@@ -117,7 +97,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50 text-black">
       <Header />
       <div className="max-w-2xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-bold mb-6 text-center">Complete Your Profile</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Update Your Profile</h1>
 
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -158,73 +138,7 @@ export default function ProfilePage() {
             />
           </div>
 
-          <div>
-            <label className="block mb-1 font-medium">Company Name</label>
-            <input
-              type="text"
-              name="company_name"
-              value={profile.company_name}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 font-medium">Phone</label>
-            <input
-              type="tel"
-              name="phone"
-              value={profile.phone}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 font-medium">Address</label>
-            <textarea
-              name="address"
-              value={profile.address}
-              onChange={handleChange}
-              rows={3}
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 font-medium">VAT Number (optional)</label>
-            <input
-              type="text"
-              name="vat_number"
-              value={profile.vat_number}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 font-medium">Logo URL (optional)</label>
-            <input
-              type="url"
-              name="logo_url"
-              value={profile.logo_url}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-
-          {profile.logo_url && (
-            <div className="mt-2">
-              <label className="block mb-1 font-medium">Logo Preview</label>
-              <img
-                src={profile.logo_url}
-                alt="Logo preview"
-                className="max-h-24 object-contain border rounded"
-              />
-            </div>
-          )}
-
-          {error && <p className="text-red-600">{error}</p>}
+          {/* Add other profile fields here (Company, Phone, Address, etc.) */}
 
           <button
             type="submit"
@@ -235,13 +149,14 @@ export default function ProfilePage() {
           </button>
         </form>
 
-        {/* Add navigation to View Profile */}
         <div className="mt-4 text-center">
-          <Link href="/profile/view-profile">
-            <a className="text-blue-600 hover:underline">View Profile</a>
+          <Link href="/profile" className="text-blue-600 hover:underline">
+            View Profile
           </Link>
         </div>
       </div>
     </div>
   )
 }
+
+export default EditProfilePage

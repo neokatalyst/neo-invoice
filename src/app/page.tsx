@@ -24,6 +24,13 @@ export default function LandingPage() {
           >
             View Dashboard
           </Link>
+
+          {/* Link to the View Profile Page */}
+          <Link href="/profile">
+            <button type="button" className="px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-900">
+              View Profile
+            </button>
+          </Link>
         </div>
       </main>
 
