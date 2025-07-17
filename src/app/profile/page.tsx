@@ -1,18 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
-import toast from 'react-hot-toast'
+import { supabase } from '@/lib/supabaseClient'
+import { uploadLogo } from '@/lib/uploadLogo'
 import Header from '@/components/Header'
-import { useAuthRedirect } from '@/lib/useAuthRedirect'
-
-import Link from 'next/link'; // Import Link for navigation
+import Link from 'next/link'
+import toast from 'react-hot-toast'
 
 export default function ProfilePage() {
-  useAuthRedirect() // This ensures the user is authenticated
   const router = useRouter()
-
   const [profile, setProfile] = useState({
     first_name: '',
     last_name: '',
@@ -23,94 +20,77 @@ export default function ProfilePage() {
     vat_number: '',
     logo_url: '',
   })
-
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true)
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return router.push('/signin')
 
-      if (!currentUser) {
-        setLoading(false)
-        router.push('/signin') // Redirect to sign in page if no user
-        return
-      }
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', currentUser.id)
-        .single()
-
-      if (error && error.code !== 'PGRST116') {
-        setError(error.message)
-      } else if (data) {
-        setProfile({
-          first_name: data.first_name || '',
-          last_name: data.last_name || '',
-          full_name: data.full_name || '',
-          company_name: data.company_name || '',
-          phone: data.phone || '',
-          address: data.address || '',
-          vat_number: data.vat_number || '',
-          logo_url: data.logo_url || '',
-        })
-      }
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      if (error) setError(error.message)
+      if (data) setProfile(data)
 
       setLoading(false)
     }
-
     fetchProfile()
   }, [router])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value })
+    setProfile(prev => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError(null)
-
     const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return toast.error('User not signed in')
 
-    if (!user) {
-      toast.error('User not signed in')
-      return
-    }
-
-    const full_name =
-      profile.full_name.trim() ||
+    const full_name = profile.full_name.trim() ||
       `${profile.first_name.trim()} ${profile.last_name.trim()}`.trim()
 
     const updates = {
       id: user.id,
-      first_name: profile.first_name,
-      last_name: profile.last_name,
+      ...profile,
       full_name,
-      company_name: profile.company_name,
-      phone: profile.phone,
-      address: profile.address,
-      vat_number: profile.vat_number,
-      logo_url: profile.logo_url,
       updated_at: new Date().toISOString(),
     }
 
-    const { error: updateError } = await supabase.from('profiles').upsert(updates)
-
-    if (updateError) {
-      setError(updateError.message)
-      toast.error(updateError.message)
-    } else {
-      toast.success('Profile updated successfully')
-      router.push('/dashboard') // Redirect after successful update
+    const { error } = await supabase.from('profiles').upsert(updates)
+    if (error) toast.error(error.message)
+    else {
+      toast.success('Profile updated!')
+      router.push('/dashboard')
     }
-
     setLoading(false)
+  }
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return
+    const file = e.target.files[0]
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return toast.error('Not signed in')
+
+    toast.promise(
+      (async () => {
+        const url = await uploadLogo(file, user.id)
+        const { error } = await supabase.from('profiles').upsert({
+          id: user.id,
+          logo_url: url,
+          updated_at: new Date().toISOString(),
+        })
+        if (error) throw new Error(error.message)
+        setProfile(prev => ({ ...prev, logo_url: url }))
+        return url
+      })(),
+      {
+        loading: 'Uploading logo...',
+        success: 'Logo uploaded and saved!',
+        error: 'Logo upload failed',
+      }
+    )
   }
 
   return (
@@ -121,127 +101,54 @@ export default function ProfilePage() {
 
         <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block mb-1 font-medium">First Name</label>
-              <input
-                type="text"
-                name="first_name"
-                value={profile.first_name}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-            </div>
-            <div>
-              <label className="block mb-1 font-medium">Last Name</label>
-              <input
-                type="text"
-                name="last_name"
-                value={profile.last_name}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-300 p-2 rounded"
-              />
-            </div>
+            <Input label="First Name" name="first_name" value={profile.first_name} onChange={handleChange} required />
+            <Input label="Last Name" name="last_name" value={profile.last_name} onChange={handleChange} required />
           </div>
 
-          <div>
-            <label className="block mb-1 font-medium">Full Name (optional)</label>
-            <input
-              type="text"
-              name="full_name"
-              value={profile.full_name}
-              onChange={handleChange}
-              placeholder="Defaults to first + last name"
-              className="w-full border border-gray-300 p-2 rounded"
-              disabled={!!(profile.first_name && profile.last_name)} // Disable if first/last name exists
-            />
-          </div>
+          <Input label="Full Name (optional)" name="full_name" value={profile.full_name} onChange={handleChange} placeholder="Defaults to first + last name" />
+          <Input label="Company Name" name="company_name" value={profile.company_name} onChange={handleChange} />
+          <Input label="Phone" name="phone" value={profile.phone} onChange={handleChange} type="tel" />
+          <Textarea label="Address" name="address" value={profile.address} onChange={handleChange} />
+          <Input label="VAT Number (optional)" name="vat_number" value={profile.vat_number} onChange={handleChange} />
+          <Input label="Logo URL (optional)" name="logo_url" value={profile.logo_url} onChange={handleChange} type="url" />
 
           <div>
-            <label className="block mb-1 font-medium">Company Name</label>
-            <input
-              type="text"
-              name="company_name"
-              value={profile.company_name}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 font-medium">Phone</label>
-            <input
-              type="tel"
-              name="phone"
-              value={profile.phone}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 font-medium">Address</label>
-            <textarea
-              name="address"
-              value={profile.address}
-              onChange={handleChange}
-              rows={3}
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 font-medium">VAT Number (optional)</label>
-            <input
-              type="text"
-              name="vat_number"
-              value={profile.vat_number}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 font-medium">Logo URL (optional)</label>
-            <input
-              type="url"
-              name="logo_url"
-              value={profile.logo_url}
-              onChange={handleChange}
-              className="w-full border border-gray-300 p-2 rounded"
-            />
+            <label className="block mb-1 font-medium">Upload Logo</label>
+            <input type="file" accept="image/*" onChange={handleLogoUpload} className="w-full border border-gray-300 p-2 rounded" />
           </div>
 
           {profile.logo_url && (
-            <div className="mt-2">
+            <div>
               <label className="block mb-1 font-medium">Logo Preview</label>
-              <img
-                src={profile.logo_url}
-                alt="Logo preview"
-                className="max-h-24 object-contain border rounded"
-              />
+              <img src={profile.logo_url} alt="Logo preview" className="max-h-24 object-contain border rounded" />
             </div>
           )}
 
           {error && <p className="text-red-600">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
+          <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50">
             {loading ? 'Saving...' : 'Save Profile'}
           </button>
         </form>
 
-        {/* Add navigation to View Profile */}
         <div className="mt-4 text-center">
-          <Link href="/profile/view-profile">
-            <a className="text-blue-600 hover:underline">View Profile</a>
-          </Link>
+          <Link href="/profile/view-profile" className="text-blue-600 hover:underline">View Profile</Link>
         </div>
       </div>
     </div>
   )
 }
+
+const Input = ({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
+  <div>
+    <label className="block mb-1 font-medium">{label}</label>
+    <input {...props} className="w-full border border-gray-300 p-2 rounded" />
+  </div>
+)
+
+const Textarea = ({ label, ...props }: { label: string } & React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
+  <div>
+    <label className="block mb-1 font-medium">{label}</label>
+    <textarea {...props} className="w-full border border-gray-300 p-2 rounded" rows={3} />
+  </div>
+)

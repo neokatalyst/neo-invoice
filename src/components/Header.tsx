@@ -59,11 +59,11 @@ export default function Header() {
                   Dashboard
                 </Link>
                 <Link
-                  href="/profile"
+                  href="/profile/view-profile"
                   className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Update Profile
+                  View Profile
                 </Link>
                 <button
                   className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"

@@ -11,25 +11,27 @@ export default function LandingPage() {
       <main className="flex-grow flex flex-col items-center justify-center text-center px-4">
         <h2 className="text-4xl font-semibold mb-4">Welcome to Neo-Invoice</h2>
         <p className="text-lg text-gray-700 mb-6">Create and manage invoices with ease</p>
-        <div className="space-x-4">
+
+        <div className="space-y-4 w-full max-w-xs">
           <Link
             href="/capture"
-            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="block w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-center"
           >
-            Create Invoice
-          </Link>
-          <Link
-            href="/dashboard"
-            className="px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-900"
-          >
-            View Dashboard
+            ➕ Create Invoice
           </Link>
 
-          {/* Link to the View Profile Page */}
-          <Link href="/profile">
-            <button type="button" className="px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-900">
-              View Profile
-            </button>
+          <Link
+            href="/dashboard"
+            className="block w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 text-center"
+          >
+            📊 View Dashboard
+          </Link>
+
+          <Link
+            href="/profile/view-profile"
+            className="block w-full bg-green-700 text-white py-2 rounded hover:bg-green-800 text-center"
+          >
+            👤 View Profile
           </Link>
         </div>
       </main>
