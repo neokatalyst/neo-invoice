@@ -24,25 +24,23 @@ export default function QuoteListPage() {
     fetchQuotes()
   }, [])
 
-  const convertToInvoice = async (quote: any) => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return toast.error('Not signed in')
-
-    const { error } = await supabase.from('invoices').insert({
-      quote_id: quote.id,
-      user_id: user.id,
-      client_name: quote.client_name,
-      client_email: quote.client_email,
-      items: quote.items,
-      total: quote.total,
-      status: 'unpaid'
-    })
-
-    if (error) {
-      toast.error('Failed to convert: ' + error.message)
-    } else {
-      toast.success('Invoice created from quote!')
-    }
+  const sendEmail = async (quoteId: string) => {
+    toast.promise(
+      fetch('/api/sendQuoteEmail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quote_id: quoteId }),
+      }).then(async res => {
+        const result = await res.json()
+        if (!res.ok) throw new Error(result.error || 'Failed to send email')
+        return result.message
+      }),
+      {
+        loading: 'Sending quote...',
+        success: 'Email sent!',
+        error: (err) => err.message || 'Error sending email',
+      }
+    )
   }
 
   if (loading) return <p className="text-center py-10">Loading quotes...</p>
@@ -63,12 +61,14 @@ export default function QuoteListPage() {
               <p><span className="font-medium">Total:</span> R {q.total?.toFixed(2)}</p>
               <p><span className="font-medium">Status:</span> {q.status}</p>
 
-              <button
-                onClick={() => convertToInvoice(q)}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-              >
-                Convert to Invoice
-              </button>
+              <div className="space-x-2">
+                <button
+                  onClick={() => sendEmail(q.id)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  Send Quote
+                </button>
+              </div>
             </div>
           ))
         )}
