@@ -13,11 +13,33 @@ export default function LandingPage() {
         <p className="text-lg text-gray-700 mb-6">Create and manage invoices with ease</p>
 
         <div className="space-y-4 w-full max-w-xs">
+
+          <Link
+            href="/quote/capture"
+            className="block w-full px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-center"
+            >
+            Create Quote
+            </Link>
+            
+            <Link
+            href="/quote/list"
+            className="block w-full px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 text-center"
+            >
+            View Quotes
+          </Link>
+
           <Link
             href="/capture"
             className="block w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-center"
           >
             ➕ Create Invoice
+          </Link>
+
+          <Link
+            href="/invoice/list"
+            className="block w-full px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 text-center"
+          >
+            View Invoice
           </Link>
 
           <Link

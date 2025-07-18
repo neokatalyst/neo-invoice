@@ -24,6 +24,19 @@ export default function InvoiceListPage() {
     fetchInvoices()
   }, [])
 
+  const viewPdf = async (invoice: any) => {
+    if (!invoice.pdf_url) return toast.error('No PDF available for this invoice')
+
+    const { data, error } = await supabase
+      .storage
+      .from('invoices') // ✅ your bucket
+      .createSignedUrl(invoice.pdf_url, 60 * 60 * 24 * 7)
+
+    if (error) return toast.error('Failed to load PDF')
+
+    window.open(data?.signedUrl, '_blank')
+  }
+
   if (loading) return <p className="text-center py-10">Loading invoices...</p>
 
   return (
@@ -42,6 +55,13 @@ export default function InvoiceListPage() {
               <p><span className="font-medium">Total:</span> R {inv.total?.toFixed(2)}</p>
               <p><span className="font-medium">Status:</span> {inv.status}</p>
               <p><span className="font-medium">Created:</span> {new Date(inv.created_at).toLocaleDateString()}</p>
+
+              <button
+                onClick={() => viewPdf(inv)}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                View PDF
+              </button>
             </div>
           ))
         )}
