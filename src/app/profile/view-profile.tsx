@@ -1,15 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
 import Header from '@/components/Header'
 import Link from 'next/link'
 
 export default function ViewProfilePage() {
   const router = useRouter()
-  const [profile, setProfile] = useState<any | null>(null)
-  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [profile, setProfile] = useState<any>(null)
+  const [logoUrl, setLogoUrl] = useState<string>('/default-logo.png')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -23,44 +23,43 @@ export default function ViewProfilePage() {
       if (data) {
         setProfile(data)
 
-        // ✅ Generate fresh signed URL for logo
         if (data.logo_url) {
-          const { data: signedData } = await supabase
+          const { data: signed } = await supabase
             .storage.from('logos')
-            .createSignedUrl(data.logo_url, 60 * 60 * 24 * 7) // 7 days
-          setLogoUrl(signedData?.signedUrl || null)
+            .createSignedUrl(data.logo_url, 60 * 60 * 24 * 7)
+
+          if (signed?.signedUrl) setLogoUrl(signed.signedUrl)
         }
       }
       setLoading(false)
     }
+
     fetchProfile()
   }, [router])
 
-  if (loading) return <p className="text-center py-10">Loading...</p>
-  if (error) return <p className="text-center text-red-600">{error}</p>
+  if (loading) return <div className="p-10 text-center">Loading profile...</div>
+  if (error) return <div className="p-10 text-center text-red-600">Error: {error}</div>
 
   return (
     <div className="min-h-screen bg-gray-50 text-black">
       <Header />
       <div className="max-w-2xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-bold mb-6 text-center">View Profile</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Your Profile</h1>
 
-        <div className="bg-white p-6 rounded shadow space-y-3">
-          <Info label="Full Name" value={profile.full_name} />
-          <Info label="Company" value={profile.company_name} />
-          <Info label="Phone" value={profile.phone} />
-          <Info label="Address" value={profile.address} />
-          <Info label="VAT Number" value={profile.vat_number} />
+        <div className="bg-white p-6 rounded shadow space-y-3 text-left">
+          <Display label="Full Name" value={profile.full_name} />
+          <Display label="Company" value={profile.company_name} />
+          <Display label="Phone" value={profile.phone} />
+          <Display label="Address" value={profile.address} />
+          <Display label="VAT Number" value={profile.vat_number} />
 
-          {logoUrl && (
-            <div>
-              <p className="font-medium mb-1">Logo:</p>
-              <img src={logoUrl} alt="Logo" className="max-h-24 object-contain border rounded" />
-            </div>
-          )}
+          <div>
+            <p className="font-medium mb-1">Logo</p>
+            <img src={logoUrl} alt="Logo" className="max-h-24 object-contain border rounded" />
+          </div>
         </div>
 
-        <div className="mt-4 text-center">
+        <div className="mt-6 text-center">
           <Link href="/profile" className="text-blue-600 hover:underline">
             Edit Profile
           </Link>
@@ -70,6 +69,6 @@ export default function ViewProfilePage() {
   )
 }
 
-const Info = ({ label, value }: { label: string, value: string | null }) => (
+const Display = ({ label, value }: { label: string; value: string | null }) => (
   <p><span className="font-medium">{label}:</span> {value?.trim() || 'N/A'}</p>
 )

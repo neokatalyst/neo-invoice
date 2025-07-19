@@ -9,6 +9,7 @@ import Link from 'next/link'
 export default function ViewProfilePage() {
   const router = useRouter()
   const [profile, setProfile] = useState<any>(null)
+  const [logoUrl, setLogoUrl] = useState<string>('/default-logo.png')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -19,7 +20,17 @@ export default function ViewProfilePage() {
 
       const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (error) setError(error.message)
-      if (data) setProfile(data)
+      if (data) {
+        setProfile(data)
+
+        if (data.logo_url) {
+          const { data: signed } = await supabase
+            .storage.from('logos')
+            .createSignedUrl(data.logo_url, 60 * 60 * 24 * 7)
+
+          if (signed?.signedUrl) setLogoUrl(signed.signedUrl)
+        }
+      }
       setLoading(false)
     }
 
@@ -27,12 +38,7 @@ export default function ViewProfilePage() {
   }, [router])
 
   if (loading) return <div className="p-10 text-center">Loading profile...</div>
-
-  if (error) return (
-    <div className="p-10 text-center text-red-600">
-      Error: {error}
-    </div>
-  )
+  if (error) return <div className="p-10 text-center text-red-600">Error: {error}</div>
 
   return (
     <div className="min-h-screen bg-gray-50 text-black">
@@ -46,13 +52,11 @@ export default function ViewProfilePage() {
           <Display label="Phone" value={profile.phone} />
           <Display label="Address" value={profile.address} />
           <Display label="VAT Number" value={profile.vat_number} />
-          
-          {profile.logo_url && (
-            <div>
-              <p className="font-medium mb-1">Logo</p>
-              <img src={profile.logo_url} alt="Logo" className="max-h-24 object-contain border rounded" />
-            </div>
-          )}
+
+          <div>
+            <p className="font-medium mb-1">Logo</p>
+            <img src={logoUrl} alt="Logo" className="max-h-24 object-contain border rounded" />
+          </div>
         </div>
 
         <div className="mt-6 text-center">

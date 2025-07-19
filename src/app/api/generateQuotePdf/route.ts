@@ -30,32 +30,37 @@ export async function GET(req: NextRequest) {
   if (error || !quote) return new Response('Quote not found', { status: 404 })
 
   let logoUrl: string | null = null
-  const logoPath = quote.logo_url ?? undefined
+  const logoPath = typeof quote.logo_url === 'string' && quote.logo_url.trim() !== '' 
+    ? quote.logo_url 
+    : undefined
 
   if (logoPath) {
     const { data: signed, error: signedError } = await supabaseAdmin
       .storage.from('logos')
       .createSignedUrl(logoPath, 60 * 60 * 24 * 7)
 
-    if (signedError) {
-      console.error('❌ Logo signed URL error:', signedError.message)
-    }
+    if (signedError) console.error('❌ Signed URL Error:', signedError.message)
 
     logoUrl = signed?.signedUrl ?? null
   }
 
-  const html = generateQuoteHTML(quote, logoUrl)
+  const html = generateQuoteHTML(quote, logoUrl ?? undefined)
 
-  const browser = await chromium.launch()
-  const page = await browser.newPage()
-  await page.setContent(html, { waitUntil: 'networkidle' })
-  const pdfBuffer = await page.pdf({ format: 'A4' })
-  await browser.close()
+  try {
+    const browser = await chromium.launch()
+    const page = await browser.newPage()
+    await page.setContent(html, { waitUntil: 'networkidle' })
+    const pdfBuffer = await page.pdf({ format: 'A4' })
+    await browser.close()
 
-  return new Response(pdfBuffer, {
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="quote-${quote_id}.pdf"`
-    }
-  })
+    return new Response(pdfBuffer, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `inline; filename="quote-${quote.reference || quote_id}.pdf"`
+      }
+    })
+  } catch (err) {
+    console.error('❌ PDF Generation Error:', err)
+    return new Response('Failed to generate PDF', { status: 500 })
+  }
 }
