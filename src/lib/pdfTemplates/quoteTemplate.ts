@@ -1,53 +1,66 @@
-export const generateQuoteHTML = (quote: any, logoUrl?: string) => `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Quote ${quote.reference}</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 40px; }
-    .header { display: flex; justify-content: space-between; align-items: center; }
-    .logo { max-height: 80px; }
-    .items { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    .items th, .items td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    .total { margin-top: 20px; font-size: 1.2rem; font-weight: bold; }
-    .footer { margin-top: 40px; font-size: 0.9rem; color: #555; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div>
-      <h1>Quote: ${quote.reference ?? 'N/A'}</h1>
-      <p><strong>Date:</strong> ${new Date(quote.created_at).toLocaleDateString()}</p>
-    </div>
-    ${logoUrl ? `<img src="${logoUrl}" class="logo" />` : ''}
-  </div>
+import { Quote, LineItem } from './types'
 
-  <p><strong>Client:</strong> ${quote.client_name}</p>
-  <p><strong>Email:</strong> ${quote.client_email}</p>
+export function generateQuoteHTML(quote: Quote, logoUrl?: string): string {
+  const items = Array.isArray(quote.items) ? quote.items : [];
+  const total = quote.total || 0;
 
-  <table class="items">
-    <thead>
-      <tr><th>Description</th><th>Quantity</th><th>Price (R)</th><th>Total (R)</th></tr>
-    </thead>
-    <tbody>
-      ${quote.items.map((item: any) => `
-        <tr>
-          <td>${item.description}</td>
-          <td>${item.quantity}</td>
-          <td>${item.price.toFixed(2)}</td>
-          <td>${(item.quantity * item.price).toFixed(2)}</td>
-        </tr>
-      `).join('')}
-    </tbody>
-  </table>
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Quote ${quote.reference || ''}</title>
+      <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
+        .logo { max-height: 80px; }
+        .title { font-size: 32px; font-weight: bold; }
+        .client { margin-bottom: 30px; }
+        .table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .table th, .table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .table th { background-color: #f5f5f5; }
+        .total { text-align: right; font-size: 20px; font-weight: bold; }
+      </style>
+    </head>
+    <body>
 
-  <p class="total">Total Amount: R ${quote.total?.toFixed(2) ?? '0.00'}</p>
+      <div class="header">
+        <div class="title">Quote</div>
+        ${logoUrl ? `<img src="${logoUrl}" class="logo" />` : ''}
+      </div>
 
-  <div class="footer">
-    <p>Thank you for considering this quote.</p>
-    <p>All amounts are in ZAR (R).</p>
-  </div>
-</body>
-</html>
-`;
+      <div class="client">
+        <p><strong>Client Name:</strong> ${quote.client_name}</p>
+        <p><strong>Client Email:</strong> ${quote.client_email}</p>
+        <p><strong>Reference:</strong> ${quote.reference || ''}</p>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map((item: LineItem) => `
+            <tr>
+              <td>${item.description}</td>
+              <td>${item.quantity}</td>
+              <td>R ${item.price.toFixed(2)}</td>
+              <td>R ${(item.quantity * item.price).toFixed(2)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <div class="total">
+        Total: R ${total.toFixed(2)}
+      </div>
+
+    </body>
+    </html>
+  `;
+}
