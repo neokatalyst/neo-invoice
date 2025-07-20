@@ -75,7 +75,7 @@ export default function SignInPage() {
         </p>
         <p className="text-center text-sm mt-4">
           Forgot password?{' '}
-          <Link href="/reset-password" className="text-blue-600 text-sm">
+          <Link href="/forgot-password" className="text-blue-600 text-sm">
               Forgot password
           </Link>
         </p>
