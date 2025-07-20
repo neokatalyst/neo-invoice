@@ -29,7 +29,7 @@ export default function SignInPage() {
       toast.error(error.message)
     } else {
       toast.success('Signed in successfully!')
-      router.push('/dashboard')
+      router.push('/')
     }
 
     setLoading(false)

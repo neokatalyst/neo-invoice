@@ -12,11 +12,11 @@ export default function ForgotPasswordPage() {
       headers: { 'Content-Type': 'application/json' },
     });
 
+    const result = await res.json();
     if (res.ok) {
-      setMessage('Reset link sent! Check your inbox.');
+      setMessage('Reset link sent! Please check your email.');
     } else {
-      const data = await res.json();
-      setMessage(data.error || 'Error sending email');
+      setMessage(result.error || 'Error sending reset email.');
     }
   };
 
@@ -25,15 +25,15 @@ export default function ForgotPasswordPage() {
       <h1 className="text-2xl font-bold">Forgot Password</h1>
       <input
         type="email"
+        className="border rounded p-2"
         placeholder="Enter your email"
         value={email}
-        className="border rounded p-2"
         onChange={(e) => setEmail(e.target.value)}
       />
       <button onClick={handleReset} className="bg-blue-600 text-white p-2 rounded">
         Send Reset Link
       </button>
-      {message && <p className="text-center">{message}</p>}
+      {message && <p className="text-center text-green-600">{message}</p>}
     </div>
   );
 }

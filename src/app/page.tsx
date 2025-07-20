@@ -50,7 +50,7 @@ export default function LandingPage() {
           </Link>
 
           <Link
-            href="/profile/view-profile"
+            href="/profile"
             className="block w-full bg-green-700 text-white py-2 rounded hover:bg-green-800 text-center"
           >
             👤 View Profile

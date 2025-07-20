@@ -27,11 +27,7 @@ export default function EditProfilePage() {
     const fetchProfile = async () => {
       setLoading(true)
       const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        router.push('/signin')
-        return
-      }
+      if (!user) return router.push('/signin')
 
       const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       if (error) setError(error.message)
@@ -48,13 +44,14 @@ export default function EditProfilePage() {
         })
 
         if (data.logo_url) {
-          const { data: signed } = await supabase.storage.from('logos').createSignedUrl(data.logo_url, 60 * 60 * 24 * 7)
+          const { data: signed } = await supabase
+            .storage.from('logos')
+            .createSignedUrl(data.logo_url, 60 * 60 * 24 * 7)
           setLogoPreview(signed?.signedUrl ?? '/default-logo.png')
         }
       }
       setLoading(false)
     }
-
     fetchProfile()
   }, [router])
 
@@ -68,13 +65,9 @@ export default function EditProfilePage() {
     setError(null)
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      toast.error('User not signed in')
-      setLoading(false)
-      return
-    }
+    if (!user) return toast.error('User not signed in')
 
-    const full_name = profile.full_name.trim() || `${profile.first_name} ${profile.last_name}`.trim()
+    const full_name = profile.full_name.trim() || `${profile.first_name.trim()} ${profile.last_name.trim()}`.trim()
 
     const updates = {
       id: user.id,
@@ -117,7 +110,7 @@ export default function EditProfilePage() {
       {
         loading: 'Uploading logo...',
         success: 'Logo uploaded!',
-        error: 'Failed to upload',
+        error: 'Failed to upload logo',
       }
     )
   }
@@ -133,7 +126,7 @@ export default function EditProfilePage() {
             <Input label="First Name" name="first_name" value={profile.first_name} onChange={handleChange} required />
             <Input label="Last Name" name="last_name" value={profile.last_name} onChange={handleChange} required />
           </div>
-          <Input label="Full Name (optional)" name="full_name" value={profile.full_name} onChange={handleChange} placeholder="Defaults to first + last name" />
+          <Input label="Full Name (optional)" name="full_name" value={profile.full_name} onChange={handleChange} />
           <Input label="Company Name" name="company_name" value={profile.company_name} onChange={handleChange} />
           <Input label="Phone" name="phone" value={profile.phone} onChange={handleChange} type="tel" />
           <Textarea label="Address" name="address" value={profile.address} onChange={handleChange} />
@@ -159,18 +152,13 @@ export default function EditProfilePage() {
 const Input = ({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
   <div>
     <label className="block mb-1 font-medium">{label}</label>
-    <input
-      {...props}
-      value={props.value ?? ''}
-      className="w-full border border-gray-300 p-2 rounded"
-    />
+    <input {...props} value={props.value ?? ''} className="w-full border border-gray-300 p-2 rounded" />
   </div>
 )
-
 
 const Textarea = ({ label, ...props }: { label: string } & React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
   <div>
     <label className="block mb-1 font-medium">{label}</label>
-    <textarea {...props} className="w-full border border-gray-300 p-2 rounded" rows={3} />
+    <textarea {...props} value={props.value ?? ''} className="w-full border border-gray-300 p-2 rounded" rows={3} />
   </div>
 )
