@@ -73,6 +73,12 @@ export default function SignInPage() {
             Sign up here
           </Link>
         </p>
+        <p className="text-center text-sm mt-4">
+          Forgot password?{' '}
+          <Link href="/reset-password" className="text-blue-600 text-sm">
+              Forgot password
+          </Link>
+        </p>
       </div>
     </div>
   )
