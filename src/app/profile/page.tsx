@@ -24,11 +24,12 @@ export default function ViewProfilePage() {
         .eq('id', user.id)
         .single()
 
-      if (error) setError(error.message)
-      if (data) {
+      if (error) {
+        setError(error.message)
+      } else if (data) {
         setProfile(data)
 
-        const logoPath = data.logo_url?.trim()
+        const logoPath = data.logo_url?.trim() ?? ''
         if (logoPath) {
           const { data: signed, error: signedError } = await supabase
             .storage.from('logos')
@@ -40,8 +41,6 @@ export default function ViewProfilePage() {
           } else {
             setLogoUrl(signed?.signedUrl ?? '/default-logo.png')
           }
-        } else {
-          setLogoUrl('/default-logo.png')
         }
       }
       setLoading(false)

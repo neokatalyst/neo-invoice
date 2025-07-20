@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import Header from '@/components/Header'
 import toast from 'react-hot-toast'
-import { uploadLogo } from '@/lib/uploadLogo'
+import Link from 'next/link'
 
 export default function EditProfilePage() {
   const router = useRouter()
@@ -59,15 +59,47 @@ export default function EditProfilePage() {
     setProfile({ ...profile, [e.target.name]: e.target.value })
   }
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const filePath = `${user.id}/${file.name}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('logos')
+      .upload(filePath, file, { upsert: true });
+
+    if (uploadError) {
+      toast.error('Failed to upload logo');
+      return;
+    }
+
+    setProfile((prev) => ({ ...prev, logo_url: filePath }));
+
+    const { data: signed, error: signedError } = await supabase
+      .storage.from('logos')
+      .createSignedUrl(filePath, 60 * 60 * 24 * 7);
+
+    if (signedError) {
+      toast.error('Logo uploaded but preview failed');
+      setLogoPreview('/default-logo.png');
+    } else {
+      setLogoPreview(signed?.signedUrl ?? '/default-logo.png');
+      toast.success('Logo uploaded');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError(null)
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return toast.error('User not signed in')
 
-    const full_name = profile.full_name.trim() || `${profile.first_name.trim()} ${profile.last_name.trim()}`.trim()
+    const full_name = profile.full_name.trim() || `${profile.first_name} ${profile.last_name}`.trim()
 
     const updates = {
       id: user.id,
@@ -91,28 +123,8 @@ export default function EditProfilePage() {
       toast.success('Profile updated')
       router.push('/profile')
     }
+
     setLoading(false)
-  }
-
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return
-    const file = e.target.files[0]
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return toast.error('Not signed in')
-
-    toast.promise(
-      (async () => {
-        const url = await uploadLogo(file, user.id)
-        setProfile(prev => ({ ...prev, logo_url: url }))
-        const { data: signed } = await supabase.storage.from('logos').createSignedUrl(url, 60 * 60 * 24 * 7)
-        setLogoPreview(signed?.signedUrl ?? '/default-logo.png')
-      })(),
-      {
-        loading: 'Uploading logo...',
-        success: 'Logo uploaded!',
-        error: 'Failed to upload logo',
-      }
-    )
   }
 
   return (
@@ -144,9 +156,15 @@ export default function EditProfilePage() {
             {loading ? 'Saving...' : 'Save Profile'}
           </button>
         </form>
+
+      <div className="mt-6 text-center">
+        <Link href="/profile" className="text-blue-600 hover:underline">
+          View Profile
+        </Link>
       </div>
     </div>
-  )
+  </div>
+)
 }
 
 const Input = ({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -162,3 +180,6 @@ const Textarea = ({ label, ...props }: { label: string } & React.TextareaHTMLAtt
     <textarea {...props} value={props.value ?? ''} className="w-full border border-gray-300 p-2 rounded" rows={3} />
   </div>
 )
+
+
+ 
