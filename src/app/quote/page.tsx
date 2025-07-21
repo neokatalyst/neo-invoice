@@ -72,16 +72,19 @@ export default function QuoteListPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quote_id: quoteId }),
       }).then(async res => {
-        const result = await res.json()
-        if (!res.ok) throw new Error(result.error || 'Failed to send email')
-        return result.message
+        const result = await res.text()
+        if (!res.ok) throw new Error(result || 'Failed to send email')
+        return 'Email sent!'
       }),
       {
         loading: 'Sending quote...',
         success: 'Email sent!',
         error: (err) => err.message || 'Error sending email',
       }
-    )
+    ).finally(() => {
+      console.log(`✅ Email send request triggered for quote ID: ${quoteId}`)
+      router.refresh()
+    })
   }
 
   if (loading) return <p className="p-10 text-center">Loading quotes...</p>

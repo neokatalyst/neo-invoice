@@ -1,6 +1,10 @@
 import { Quote, LineItem } from './types'
 
 export function generateQuoteHTML(quote: Quote, logoUrl?: string): string {
+  console.log('✅ Starting HTML generation');
+  console.log('Quote received:', JSON.stringify(quote, null, 2));
+  console.log('Logo URL:', logoUrl);
+
   const items = Array.isArray(quote.items) ? quote.items : [];
   const total = quote.total || 0;
 

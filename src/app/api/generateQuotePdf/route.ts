@@ -71,5 +71,9 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error('PDF generation failed:', err)
     return new Response('Failed to generate PDF', { status: 500 })
+console.log('Fetched quote:', quote);
+console.log('Logo used:', logoUrl);
+    
+
   }
 }
