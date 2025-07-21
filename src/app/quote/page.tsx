@@ -13,6 +13,8 @@ type Quote = {
   client_name: string
   total: number
   status: string
+  created_at: string
+  invoice_id?: string | null
 }
 
 export default function QuoteListPage() {
@@ -24,7 +26,7 @@ export default function QuoteListPage() {
     const fetchQuotes = async () => {
       const { data, error } = await supabase
         .from('quotes')
-        .select('id, reference, client_name, total, status')
+        .select('id, reference, client_name, total, status, created_at, invoice_id')
         .neq('status', 'converted')
         .order('created_at', { ascending: false })
 
@@ -41,21 +43,30 @@ export default function QuoteListPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return toast.error('Not signed in')
 
-    const { error } = await supabase.from('invoices').insert({
+    const { data: invoice, error } = await supabase.from('invoices').insert({
       user_id: user.id,
       quote_id: quote.id,
       client_name: quote.client_name,
       items: [],
       total: quote.total,
       status: 'unpaid',
-    })
+    }).select().single()
 
-    if (error) {
+    if (error || !invoice) {
       toast.dismiss()
       return toast.error('Failed to convert quote')
     }
 
-    await supabase.from('quotes').update({ status: 'converted' }).eq('id', quote.id)
+    const { error: updateError } = await supabase.from('quotes').update({
+      status: 'converted',
+      invoice_id: invoice.id
+    }).eq('id', quote.id)
+
+    if (updateError) {
+      toast.dismiss()
+      return toast.error('Failed to update quote')
+    }
+
     toast.dismiss()
     toast.success('Converted to invoice')
     router.refresh()
@@ -104,6 +115,7 @@ export default function QuoteListPage() {
               <p><span className="font-medium">Client:</span> {q.client_name}</p>
               <p><span className="font-medium">Total:</span> R {q.total?.toFixed(2)}</p>
               <p><span className="font-medium">Status:</span> {q.status}</p>
+              <p><span className="font-medium">Created:</span> {new Date(q.created_at).toLocaleDateString()}</p>
               <div className="flex flex-wrap gap-2">
                 <Link href={`/quote/edit-quote?id=${q.id}`} className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
                   Edit
@@ -126,6 +138,11 @@ export default function QuoteListPage() {
                 >
                   Send Email
                 </button>
+                {q.invoice_id && (
+                  <Link href={`/invoice/view?id=${q.invoice_id}`} className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                    View Invoice
+                  </Link>
+                )}
               </div>
             </div>
           ))
