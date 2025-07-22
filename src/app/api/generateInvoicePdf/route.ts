@@ -24,7 +24,58 @@ export async function GET(req: NextRequest) {
 
   if (error || !invoice) return new Response('Invoice not found', { status: 404 })
 
-  const html = generateInvoiceHTML(invoice)
+  let logoUrl: string | null = null
+
+  const invoiceLogo = invoice.logo_url?.trim() || null
+
+  if (invoiceLogo) {
+    const { data: signed, error: signedError } = await supabaseAdmin
+      .storage.from('logos')
+      .createSignedUrl(invoiceLogo, 60 * 60 * 24 * 7)
+
+    if (signedError) console.warn('Signed URL error (invoice logo):', signedError.message)
+    logoUrl = signed?.signedUrl ?? null
+  } else {
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .select('logo_url')
+      .eq('id', invoice.user_id)
+      .single()
+
+    if (!profileError && profile?.logo_url) {
+      const { data: signed } = await supabaseAdmin
+        .storage.from('logos')
+        .createSignedUrl(profile.logo_url, 60 * 60 * 24 * 7)
+      logoUrl = signed?.signedUrl ?? null
+    }
+  }
+
+  const safeItems = (invoice.items ?? []) as { description: string; quantity: number; price: number }[]
+
+  const subtotal = safeItems.reduce((sum: number, i) => sum + (i.price || 0) * (i.quantity || 0), 0)
+  const vat = (subtotal * 0.15).toFixed(2)
+  const total = (subtotal + parseFloat(vat)).toFixed(2)
+
+  const html = generateInvoiceHTML({
+    company_logo_url: logoUrl ?? '',
+    company_name: invoice.company_name || '',
+    company_address: invoice.company_address || '',
+    client_name: invoice.client_name,
+    client_email: invoice.client_email,
+    invoice_reference: invoice.reference || invoice.id,
+    invoice_date: new Date(invoice.created_at).toLocaleDateString(),
+    due_date: invoice.due_date || '',
+    items: safeItems.map(i => ({
+      description: i.description,
+      quantity: i.quantity,
+      price: (i.price || 0).toFixed(2),
+      total: ((i.price || 0) * (i.quantity || 0)).toFixed(2)
+    })),
+    subtotal: subtotal.toFixed(2),
+    vat,
+    total,
+    notes: invoice.notes || ''
+  })
 
   try {
     const browser = await chromium.launch()
@@ -42,6 +93,8 @@ export async function GET(req: NextRequest) {
     })
   } catch (err) {
     console.error('PDF generation failed:', err)
+    console.log('Fetched invoice:', invoice)
+    console.log('Logo used:', logoUrl)
     return new Response('Failed to generate PDF', { status: 500 })
   }
 }

@@ -37,6 +37,7 @@ export default function ClientDashboardLayout({ children }: { children: ReactNod
     { label: 'Quotes', href: '/client-dashboard/quotes' },
     { label: 'Subscription', href: '/client-dashboard/subscription' },
     { label: 'Settings', href: '/client-dashboard/settings' },
+    { label: 'Broadcast', href: '/admin-dashboard/broadcast' },
   ]
 
   return (

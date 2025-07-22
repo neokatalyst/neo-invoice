@@ -50,17 +50,27 @@ export default function Header() {
                 <Link href="/invoice/list" className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                 >
                 Invoices</Link>
-                <Link href="/profile/view-profile" className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-                >
-                Profile</Link>
               </nav>
-              
                 <Link
                   href="/dashboard"
                   className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                   onClick={() => setMenuOpen(false)}
                 >
                   Dashboard
+                </Link>
+                <Link
+                  href="/client-dashboard"
+                  className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Client Dashboard
+                </Link>
+                                <Link
+                  href="/admin-dashboard"
+                  className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Admin Dashboard
                 </Link>
                 <Link
                   href="/profile"

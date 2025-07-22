@@ -46,7 +46,20 @@ export default function LandingPage() {
             href="/dashboard"
             className="block w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 text-center"
           >
-            📊 View Dashboard
+            📊 Invoice Dashboard
+          </Link>
+
+                    <Link
+            href="/client-dashboard"
+            className="block w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 text-center"
+          >
+            📊 Client Dashboard
+          </Link>
+                              <Link
+            href="/admin-dashboard"
+            className="block w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 text-center"
+          >
+            📊 Admin Dashboard
           </Link>
 
           <Link

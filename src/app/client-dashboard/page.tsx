@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
+import Link from 'next/link'
 
 export default function ClientDashboardHome() {
   const [invoiceCount, setInvoiceCount] = useState<number>(0)
@@ -40,14 +41,18 @@ export default function ClientDashboardHome() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <StatCard title="Total Invoices" count={invoiceCount} />
-      <StatCard title="Total Quotes" count={quoteCount} />
+      <Link href="/client-dashboard/invoices" className="hover:opacity-80 transition">
+        <StatCard title="Total Invoices" count={invoiceCount} />
+      </Link>
+      <Link href="/client-dashboard/quotes" className="hover:opacity-80 transition">
+        <StatCard title="Total Quotes" count={quoteCount} />
+      </Link>
     </div>
   )
 }
 
 const StatCard = ({ title, count }: { title: string; count: number }) => (
-  <div className="bg-white rounded shadow p-6 text-center">
+  <div className="bg-white rounded shadow p-6 text-center hover:shadow-lg transition">
     <h2 className="text-lg font-medium">{title}</h2>
     <p className="text-4xl font-bold mt-2">{count}</p>
   </div>
