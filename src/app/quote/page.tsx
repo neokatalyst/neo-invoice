@@ -11,9 +11,12 @@ type Quote = {
   id: string
   reference: string | null
   client_name: string
+  client_email: string
   total: number
+  items: any[]
   status: string
   created_at: string
+  converted_at?: string | null
   invoice_id?: string | null
 }
 
@@ -26,8 +29,7 @@ export default function QuoteListPage() {
     const fetchQuotes = async () => {
       const { data, error } = await supabase
         .from('quotes')
-        .select('id, reference, client_name, total, status, created_at, invoice_id')
-        .neq('status', 'converted')
+        .select('id, reference, client_name, client_email, total, items, status, created_at, converted_at, invoice_id')
         .order('created_at', { ascending: false })
 
       if (error) toast.error(error.message)
@@ -47,7 +49,8 @@ export default function QuoteListPage() {
       user_id: user.id,
       quote_id: quote.id,
       client_name: quote.client_name,
-      items: [],
+      client_email: quote.client_email,
+      items: quote.items,
       total: quote.total,
       status: 'unpaid',
     }).select().single()
@@ -59,7 +62,8 @@ export default function QuoteListPage() {
 
     const { error: updateError } = await supabase.from('quotes').update({
       status: 'converted',
-      invoice_id: invoice.id
+      invoice_id: invoice.id,
+      converted_at: new Date().toISOString(),
     }).eq('id', quote.id)
 
     if (updateError) {
@@ -107,25 +111,31 @@ export default function QuoteListPage() {
         <h1 className="text-2xl font-bold mb-4">Quotes</h1>
 
         {quotes.length === 0 ? (
-          <p>No active quotes.</p>
+          <p>No quotes found.</p>
         ) : (
           quotes.map((q) => (
             <div key={q.id} className="p-4 bg-white rounded shadow space-y-2">
               <p><span className="font-medium">Reference:</span> {q.reference || 'N/A'}</p>
               <p><span className="font-medium">Client:</span> {q.client_name}</p>
+              <p><span className="font-medium">Email:</span> {q.client_email}</p>
               <p><span className="font-medium">Total:</span> R {q.total?.toFixed(2)}</p>
               <p><span className="font-medium">Status:</span> {q.status}</p>
               <p><span className="font-medium">Created:</span> {new Date(q.created_at).toLocaleDateString()}</p>
+              {q.status === 'converted' && (
+                <p><span className="font-medium">Converted:</span> {q.converted_at ? new Date(q.converted_at).toLocaleDateString() : 'N/A'}</p>
+              )}
               <div className="flex flex-wrap gap-2">
                 <Link href={`/quote/edit-quote?id=${q.id}`} className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
                   Edit
                 </Link>
-                <button
-                  onClick={() => convertToInvoice(q)}
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                >
-                  Convert
-                </button>
+                {q.status !== 'converted' && (
+                  <button
+                    onClick={() => convertToInvoice(q)}
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                  >
+                    Convert
+                  </button>
+                )}
                 <button
                   onClick={() => viewPdf(q.id)}
                   className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"

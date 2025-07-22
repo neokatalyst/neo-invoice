@@ -119,11 +119,26 @@ export default function EditProfilePage() {
     if (updateError) {
       setError(updateError.message)
       toast.error(updateError.message)
-    } else {
-      toast.success('Profile updated')
-      router.push('/profile')
+      setLoading(false)
+      return
     }
 
+    // ✅ Update user_metadata with proper organisation_id
+    const orgId = profile.company_name.trim().toLowerCase().replace(/\s+/g, '-')
+    const { error: metaError } = await supabase.auth.updateUser({
+      data: {
+        role: 'admin',
+        organisation_id: orgId,
+      }
+    })
+
+    if (metaError) {
+      toast.error('Metadata update failed: ' + metaError.message)
+    } else {
+      toast.success('Profile and metadata updated successfully')
+    }
+
+    router.push('/profile')
     setLoading(false)
   }
 
@@ -157,14 +172,12 @@ export default function EditProfilePage() {
           </button>
         </form>
 
-      <div className="mt-6 text-center">
-        <Link href="/profile" className="text-blue-600 hover:underline">
-          View Profile
-        </Link>
+        <div className="mt-6 text-center">
+          <Link href="/profile" className="text-blue-600 hover:underline">View Profile</Link>
+        </div>
       </div>
     </div>
-  </div>
-)
+  )
 }
 
 const Input = ({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -180,6 +193,3 @@ const Textarea = ({ label, ...props }: { label: string } & React.TextareaHTMLAtt
     <textarea {...props} value={props.value ?? ''} className="w-full border border-gray-300 p-2 rounded" rows={3} />
   </div>
 )
-
-
- 
