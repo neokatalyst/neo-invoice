@@ -14,7 +14,9 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const invoice_id = searchParams.get('invoice_id')
 
-  if (!invoice_id) return new Response('Missing invoice_id', { status: 400 })
+  if (!invoice_id) {
+    return new Response('Missing invoice_id', { status: 400 })
+  }
 
   const { data: invoice, error } = await supabaseAdmin
     .from('invoices')
@@ -22,37 +24,43 @@ export async function GET(req: NextRequest) {
     .eq('id', invoice_id)
     .single()
 
-  if (error || !invoice) return new Response('Invoice not found', { status: 404 })
+  if (error || !invoice) {
+    console.error('Invoice fetch error:', error)
+    return new Response('Invoice not found', { status: 404 })
+  }
 
   let logoUrl: string | null = null
 
-  const invoiceLogo = invoice.logo_url?.trim() || null
+  try {
+    const logoPath = invoice.logo_url?.trim()
 
-  if (invoiceLogo) {
-    const { data: signed, error: signedError } = await supabaseAdmin
-      .storage.from('logos')
-      .createSignedUrl(invoiceLogo, 60 * 60 * 24 * 7)
-
-    if (signedError) console.warn('Signed URL error (invoice logo):', signedError.message)
-    logoUrl = signed?.signedUrl ?? null
-  } else {
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('logo_url')
-      .eq('id', invoice.user_id)
-      .single()
-
-    if (!profileError && profile?.logo_url) {
-      const { data: signed } = await supabaseAdmin
+    if (logoPath) {
+      const { data: signed, error: signedError } = await supabaseAdmin
         .storage.from('logos')
-        .createSignedUrl(profile.logo_url, 60 * 60 * 24 * 7)
+        .createSignedUrl(logoPath, 60 * 60 * 24 * 7)
+      if (signedError) console.warn('Signed URL error (invoice logo):', signedError.message)
       logoUrl = signed?.signedUrl ?? null
+    } else {
+      const { data: profile, error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .select('logo_url')
+        .eq('id', invoice.user_id)
+        .single()
+
+      if (!profileError && profile?.logo_url) {
+        const { data: signed } = await supabaseAdmin
+          .storage.from('logos')
+          .createSignedUrl(profile.logo_url, 60 * 60 * 24 * 7)
+        logoUrl = signed?.signedUrl ?? null
+      }
     }
+  } catch (err) {
+    console.error('Logo fetch error:', err)
   }
 
   const safeItems = (invoice.items ?? []) as { description: string; quantity: number; price: number }[]
 
-  const subtotal = safeItems.reduce((sum: number, i) => sum + (i.price || 0) * (i.quantity || 0), 0)
+  const subtotal = safeItems.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 0), 0)
   const vat = (subtotal * 0.15).toFixed(2)
   const total = (subtotal + parseFloat(vat)).toFixed(2)
 
@@ -81,8 +89,10 @@ export async function GET(req: NextRequest) {
     const browser = await chromium.launch()
     const context = await browser.newContext()
     const page = await context.newPage()
+
     await page.setContent(html, { waitUntil: 'networkidle' })
     const pdfBuffer = await page.pdf({ format: 'A4' })
+
     await browser.close()
 
     return new Response(pdfBuffer, {
@@ -93,8 +103,6 @@ export async function GET(req: NextRequest) {
     })
   } catch (err) {
     console.error('PDF generation failed:', err)
-    console.log('Fetched invoice:', invoice)
-    console.log('Logo used:', logoUrl)
     return new Response('Failed to generate PDF', { status: 500 })
   }
 }
