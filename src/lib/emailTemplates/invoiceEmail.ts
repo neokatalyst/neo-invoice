@@ -1,4 +1,4 @@
-import { Invoice } from '@/app/invoice/list/page'
+import type { Invoice } from '@/types/invoice'
 
 export function generateInvoiceEmailHTML(invoice: Invoice, pdfUrl: string): string {
   return `

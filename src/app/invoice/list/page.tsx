@@ -45,10 +45,11 @@ export default function InvoiceListPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ invoice_id: invoiceId }),
       }).then(async res => {
-        const result = await res.text()
-        if (!res.ok) throw new Error(result || 'Failed to send email')
-        return 'Email sent!'
-      }),
+  const result = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(result.error || result.message || 'Failed to send email')
+  return 'Email sent!'
+})
+,
       {
         loading: 'Sending invoice...',
         success: 'Email sent!',
