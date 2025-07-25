@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     const page = await browser.newPage()
     await page.setContent(html, { waitUntil: 'networkidle0' })
 
-    const pdfBuffer = await page.pdf({ format: 'A4' })
+    const pdfBuffer = await page.pdf({ format: 'a4' })
 
     await browser.close()
 
