@@ -79,7 +79,7 @@ export default function SettingsPage() {
       {/* Subscription Info */}
       <section className="bg-white p-4 rounded shadow">
         <h2 className="text-lg font-semibold mb-2">Subscription</h2>
-        <p>You're currently on the <strong>Free</strong> plan.</p>
+        <p>You are currently on the <strong>Free</strong> plan.</p>
         <button
           className="mt-3 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           disabled

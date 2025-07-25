@@ -21,7 +21,7 @@ type Quote = {
 export default function QuoteListPage() {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
+ // const router = useRouter()
 
   useEffect(() => {
     const fetchQuotes = async () => {
