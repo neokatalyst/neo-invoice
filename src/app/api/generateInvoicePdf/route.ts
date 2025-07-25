@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     .single()
 
   if (error || !invoice) {
-    console.error('Invoice fetch error:', error)
+    console.error('❌ Invoice fetch error:', error)
     return new Response('Invoice not found', { status: 404 })
   }
 
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
       const { data: signed, error: signedError } = await supabaseAdmin
         .storage.from('logos')
         .createSignedUrl(logoPath, 60 * 60 * 24 * 7)
-      if (signedError) console.warn('Signed URL error (invoice logo):', signedError.message)
+      if (signedError) console.warn('⚠️ Signed URL error (invoice logo):', signedError.message)
       logoUrl = signed?.signedUrl ?? null
     } else {
       const { data: profile, error: profileError } = await supabaseAdmin
@@ -55,10 +55,14 @@ export async function GET(req: NextRequest) {
       }
     }
   } catch (err) {
-    console.error('Logo fetch error:', err)
+    console.error('❌ Logo fetch error:', err)
   }
 
-  const safeItems = (invoice.items ?? []) as { description: string; quantity: number; price: number }[]
+  const safeItems = (invoice.items ?? []) as {
+    description: string
+    quantity: number
+    price: number
+  }[]
 
   const subtotal = safeItems.reduce((sum, i) => sum + (i.price || 0) * (i.quantity || 0), 0)
   const vat = (subtotal * 0.15).toFixed(2)
@@ -86,7 +90,11 @@ export async function GET(req: NextRequest) {
   })
 
   try {
-    const browser = await chromium.launch()
+    const browser = await chromium.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    })
+
     const context = await browser.newContext()
     const page = await context.newPage()
 
@@ -95,6 +103,7 @@ export async function GET(req: NextRequest) {
 
     await browser.close()
 
+    console.log('✅ Invoice PDF generated:', invoice.reference)
     return new Response(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
@@ -102,7 +111,7 @@ export async function GET(req: NextRequest) {
       }
     })
   } catch (err) {
-    console.error('PDF generation failed:', err)
+    console.error('❌ PDF generation failed:', err)
     return new Response('Failed to generate PDF', { status: 500 })
   }
 }
