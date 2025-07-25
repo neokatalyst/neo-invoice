@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import chromium from 'chrome-aws-lambda'
+import { chromium } from 'playwright'
 import puppeteer from 'puppeteer-core'
 import { generateInvoiceHTML } from '@/lib/pdfTemplates/invoiceTemplate'
 
@@ -30,14 +30,15 @@ export async function GET(req: NextRequest) {
   const html = generateInvoiceHTML(invoice)
 
   try {
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
-    })
+const browser = await chromium.launch({
+  args: ['--no-sandbox'],
+  executablePath: chromium.executablePath(), // 👈 call the function
+  headless: true,
+});
+
 
     const page = await browser.newPage()
-    await page.setContent(html, { waitUntil: 'networkidle0' })
+    await page.setContent(html, { waitUntil: 'networkidle' })
 
     const pdfBuffer = await page.pdf({ format: 'a4' })
 
