@@ -12,7 +12,7 @@ type LineItem = {
   price: number
 }
 
-export default function QuoteCapturePage() {
+export default function Page() {
   const router = useRouter()
   const [clientName, setClientName] = useState('')
   const [clientEmail, setClientEmail] = useState('')

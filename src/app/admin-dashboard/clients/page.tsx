@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
 
-export default function AdminClientsPage() {
+export default function Page() {
   const [clients, setClients] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 

@@ -7,7 +7,7 @@ import Header from '@/components/Header'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
-export default function EditProfilePage() {
+export default function Page() {
   const router = useRouter()
   const [profile, setProfile] = useState({
     first_name: '',

@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/utils/supabase/client';
 
-export default function ResetPasswordPage() {
+export default function Page() {
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');

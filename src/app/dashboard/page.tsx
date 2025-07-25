@@ -9,7 +9,7 @@ import Header from '@/components/Header'
 import toast from 'react-hot-toast'
 import { FaDownload, FaUpload, FaEye } from 'react-icons/fa'
 
-export default function DashboardPage() {
+export default function Page() {
   useAuthRedirect() // Redirect if not authenticated
 
   const [invoices, setInvoices] = useState<any[]>([])

@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 
-export default function ForgotPasswordPage() {
+export default function Page() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
 

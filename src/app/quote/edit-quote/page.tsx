@@ -12,7 +12,7 @@ type LineItem = {
   price: number
 }
 
-export default function EditQuotePage() {
+export default function Page() {
   const router = useRouter()
   const params = useSearchParams()
   const quoteId = params?.get('id') || ''

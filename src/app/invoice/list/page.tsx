@@ -15,7 +15,7 @@ export type Invoice = {
   reference?: string | null
 }
 
-export default function InvoiceListPage() {
+export default function Page() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
 

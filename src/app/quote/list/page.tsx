@@ -18,7 +18,7 @@ type Quote = {
   invoice_id?: string | null
 }
 
-export default function QuoteListPage() {
+export default function Page() {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()

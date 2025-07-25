@@ -3,7 +3,7 @@
 import Header from '@/components/Header'
 import Link from 'next/link'
 
-export default function LandingPage() {
+export default function Page() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 text-black">
       <Header />

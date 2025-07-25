@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import Header from '@/components/Header'
 
-export default function QuoteResponsePage() {
+export default function Page() {
   const params = useSearchParams()
   const router = useRouter()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
