@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
-export default function ClientDashboardHome() {
+export default function Page() {
   const [invoiceCount, setInvoiceCount] = useState<number>(0)
   const [quoteCount, setQuoteCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)

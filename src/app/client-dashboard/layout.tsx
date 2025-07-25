@@ -7,13 +7,14 @@ import { useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
 
-export default function ClientDashboardLayout({ children }: { children: ReactNode }) {
+export default function Layout({ children }: { children: ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
 
-  useEffect(() => {
-    const protectRoute = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+useEffect(() => {
+  console.log('✅ ClientDashboard Layout loaded')
+  if (typeof window !== 'undefined') {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         toast.error('Please log in')
         router.push('/signin')
@@ -25,10 +26,10 @@ export default function ClientDashboardLayout({ children }: { children: ReactNod
         toast.error('Access Denied')
         router.push('/')
       }
-    }
+    })
+  }
+}, [router])
 
-    protectRoute()
-  }, [router])
 
   const navItems = [
     { label: 'Dashboard', href: '/client-dashboard' },
@@ -38,6 +39,7 @@ export default function ClientDashboardLayout({ children }: { children: ReactNod
     { label: 'Subscription', href: '/client-dashboard/subscription' },
     { label: 'Settings', href: '/client-dashboard/settings' },
     { label: 'Broadcast', href: '/admin-dashboard/broadcast' },
+    { label: 'Home', href: '/' },
   ]
 
   return (

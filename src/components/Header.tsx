@@ -44,20 +44,13 @@ export default function Header() {
                   Home
                 </Link>
                 <nav className="space-x-4">
-                <Link href="/quote/list" className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                <Link href="/client-dashboard/quotes" className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                 >
                 Quotes</Link>
-                <Link href="/invoice/list" className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                <Link href="/client-dashboard/invoices"  className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                 >
                 Invoices</Link>
               </nav>
-                <Link
-                  href="/dashboard"
-                  className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
                 <Link
                   href="/client-dashboard"
                   className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
