@@ -39,7 +39,7 @@ useEffect(() => {
     { label: 'Subscription', href: '/client-dashboard/subscription' },
     { label: 'Settings', href: '/client-dashboard/settings' },
     { label: 'Broadcast', href: '/admin-dashboard/broadcast' },
-    { label: 'Home', href: '/' },
+    { label: 'Home', href: '/landing' },
   ]
 
   return (

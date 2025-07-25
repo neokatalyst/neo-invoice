@@ -48,7 +48,7 @@ export default function Page() {
       toast.error(error.message)
     } else {
       toast.success('Invoice created successfully!')
-      router.push('/dashboard')
+      router.push('/client-dashboard/invoices/view')
     }
 
     setLoading(false)
@@ -110,7 +110,7 @@ export default function Page() {
 
         <div className="mt-8 text-center">
           <Link
-            href="/dashboard"
+            href="/client-dashboard/invoices/view"
             className="inline-block px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-900"
           >
             Go to Dashboard

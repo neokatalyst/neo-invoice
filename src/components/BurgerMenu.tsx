@@ -27,15 +27,9 @@ export default function BurgerMenu() {
 
       {open && (
         <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50">
+
           <Link
-            href="/capture"
-            className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-            onClick={() => setOpen(false)}
-          >
-            Capture
-          </Link>
-          <Link
-            href="/dashboard"
+            href="/client-dashboard"
             className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
             onClick={() => setOpen(false)}
           >

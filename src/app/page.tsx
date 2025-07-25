@@ -1,51 +1,38 @@
+// app/page.tsx
 'use client'
 
-import Header from '@/components/Header'
-import Link from 'next/link'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
 
-export default function Page() {
-  return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 text-black">
-      <Header />
+export default function HomeRedirect() {
+  const router = useRouter()
 
-      <main className="flex-grow flex flex-col items-center justify-center text-center px-4">
-        <h2 className="text-4xl font-semibold mb-4">Welcome to Neo-Invoice</h2>
-        <p className="text-lg text-gray-700 mb-6">Create and manage your quotes and invoices with ease.</p>
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
 
-        <div className="space-y-4 w-full max-w-xs">
+      if (session?.user) {
+        const role = session.user.user_metadata.role
+        const org = session.user.user_metadata.organisation_id
+        if (role === 'admin' || role === 'superadmin') {
+          router.push('/landing')
+                  } else if (org) {
+          router.push('/client-dashboard')
+        } else if (org) {
+          router.push('/admin-dashboard')
+        } else {
+          router.push('/settings')
+        }
+      } else {
+        router.push('/signin')
+      }
+    }
 
-          {/* Client Features */}
-          <Link href="/quote/capture" className="block w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-center">
-            ➕ Create Quote
-          </Link>
-          <Link href="/capture" className="block w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 text-center">
-            ➕ Create Invoice
-          </Link>
-          <Link href="/client-dashboard/quotes" className="block w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 text-center">
-            📄 View Quotes
-          </Link>
-          <Link href="/client-dashboard/invoices" className="block w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 text-center">
-            📑 View Invoices
-          </Link>
+    checkSession()
+  }, [router])
 
-          {/* Dashboards */}
-          <Link href="/client-dashboard" className="block w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 text-center">
-            📊 Client Dashboard
-          </Link>
-          <Link href="/admin-dashboard" className="block w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-900 text-center">
-            🛠️ Admin Dashboard
-          </Link>
-
-          {/* Profile */}
-          <Link href="/profile" className="block w-full bg-green-700 text-white py-2 rounded hover:bg-green-800 text-center">
-            👤 View Profile
-          </Link>
-        </div>
-      </main>
-
-      <footer className="w-full py-4 text-center text-gray-500 text-sm">
-        &copy; {new Date().getFullYear()} Neo-Invoice. All rights reserved.
-      </footer>
-    </div>
-  )
+  return null
 }

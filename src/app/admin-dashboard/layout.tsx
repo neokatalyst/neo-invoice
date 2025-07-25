@@ -37,7 +37,7 @@ export default function AdminDashboardLayout({ children }: { children: ReactNode
     { label: 'Subscriptions', href: '/admin-dashboard/subscriptions' },
     { label: 'Logs', href: '/admin-dashboard/logs' },
     { label: 'Broadcast', href: '/admin-dashboard/broadcast' },
-    { label: 'Home', href: '/' },
+    { label: 'Home', href: '/landing' },
   ]
 
   return (

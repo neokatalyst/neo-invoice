@@ -1,10 +1,10 @@
-
+// app/landing/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function LandingPage() {
   const [userName, setUserName] = useState<string | null>(null)
@@ -12,25 +12,18 @@ export default function LandingPage() {
 
   useEffect(() => {
     const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
-
+      const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
         const { user_metadata } = session.user
-        const name = user_metadata?.first_name || null
-        setUserName(name)
+        setUserName(user_metadata?.first_name || null)
       }
     }
-
     getSession()
   }, [])
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut()
-    if (!error) {
-      router.push('/signin')
-    }
+    if (!error) router.push('/signin')
   }
 
   return (
@@ -39,9 +32,9 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto px-4 flex justify-between items-center">
           <h1 className="text-xl font-bold text-gray-800">Neo-Invoice</h1>
           <nav className="space-x-4 flex items-center">
-            <Link href="/" className="text-gray-600 hover:text-black">Home</Link>
+            <Link href="/landing" className="text-gray-600 hover:text-black">Home</Link>
             <Link href="/quote/capture" className="text-gray-600 hover:text-black">Quote Capture</Link>
-            <Link href="/dashboard" className="text-gray-600 hover:text-black">Dashboard</Link>
+            <Link href="/client-dashboard" className="text-gray-600 hover:text-black">Dashboard</Link>
 
             {userName && (
               <>
@@ -62,12 +55,19 @@ export default function LandingPage() {
         <h2 className="text-4xl font-semibold mb-4">Welcome to Neo-Invoice</h2>
         <p className="text-lg text-gray-600 mb-6">Create and manage invoices with ease</p>
         <div className="space-x-4">
-          <Link
+                    <Link
+            href="/quote/capture"
+            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Create Quote
+          </Link>
+                   <Link
             href="/capture"
             className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Create Invoice
           </Link>
+
           <Link
             href="/dashboard"
             className="px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-900"
