@@ -1,40 +1,37 @@
 
-// app/page.tsx
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
+import { useRouter } from 'next/navigation'
 
-export default function HomeRedirect() {
+export default function LandingPage() {
+  const [userName, setUserName] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
-    const checkSession = async () => {
+    const getSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession()
 
       if (session?.user) {
-        const role = session.user.user_metadata.role
-        const org = session.user.user_metadata.organisation_id
-        if (role === 'admin' || role === 'superadmin') {
-          router.push('/admin-dashboard')
-        } else if (org) {
-          router.push('/client-dashboard')
-        } else {
-          router.push('/settings') // fallback if user profile not complete
-        }
-      } else {
-        router.push('/signin')
+        const { user_metadata } = session.user
+        const name = user_metadata?.first_name || null
+        setUserName(name)
       }
     }
 
-    checkSession()
-  }, [router])
+    getSession()
+  }, [])
 
-  return null
-}
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (!error) {
+      router.push('/signin')
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50">
