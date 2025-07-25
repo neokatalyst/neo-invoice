@@ -1,57 +1,45 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { chromium } from 'playwright'
-import puppeteer from 'puppeteer-core'
 import { generateInvoiceHTML } from '@/lib/pdfTemplates/invoiceTemplate'
+import { chromium } from 'playwright'
 
-const supabase = createClient(
+export const runtime = 'nodejs'
+
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-
-export const runtime = 'edge'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const invoice_id = searchParams.get('invoice_id')
 
-  if (!invoice_id)
+  if (!invoice_id) {
     return new Response('Missing invoice_id', { status: 400 })
+  }
 
-  const { data: invoice, error } = await supabase
+  const { data: invoice, error } = await supabaseAdmin
     .from('invoices')
     .select('*')
     .eq('id', invoice_id)
     .single()
 
-  if (error || !invoice)
+  if (error || !invoice) {
     return new Response('Invoice not found', { status: 404 })
+  }
 
   const html = generateInvoiceHTML(invoice)
 
-  try {
-const browser = await chromium.launch({
-  args: ['--no-sandbox'],
-  executablePath: chromium.executablePath(), // 👈 call the function
-  headless: true,
-});
+  const browser = await chromium.launch()
+  const page = await browser.newPage()
+  await page.setContent(html, { waitUntil: 'networkidle' })
+  const pdfBuffer = await page.pdf({ format: 'a4' })
+  await browser.close()
 
-
-    const page = await browser.newPage()
-    await page.setContent(html, { waitUntil: 'networkidle' })
-
-    const pdfBuffer = await page.pdf({ format: 'a4' })
-
-    await browser.close()
-
-    return new Response(pdfBuffer, {
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${invoice.reference || 'invoice'}.pdf"`
-      }
-    })
-  } catch (err: any) {
-    console.error('❌ PDF generation failed:', err)
-    return new Response('Failed to generate PDF', { status: 500 })
-  }
+  return new Response(pdfBuffer, {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename=invoice-${invoice.reference || invoice.id}.pdf`
+    }
+  })
 }
