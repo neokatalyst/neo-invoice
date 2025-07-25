@@ -1,42 +1,74 @@
-import { Quote, LineItem } from './types'
+import type { Quote, LineItem } from './types'
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
 
 export function generateQuoteHTML(quote: Quote, logoUrl?: string): string {
-  console.log('✅ Starting HTML generation');
-  console.log('Quote received:', JSON.stringify(quote, null, 2));
-  console.log('Logo URL:', logoUrl);
-
-  const items = Array.isArray(quote.items) ? quote.items : [];
-  const total = quote.total || 0;
+  const items = Array.isArray(quote.items) ? quote.items : []
+  const total = quote.total ?? 0
 
   return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
-      <meta charset="UTF-8">
-      <title>Quote ${quote.reference || ''}</title>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Quote ${escapeHtml(quote.reference || '')}</title>
       <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 40px; }
-        .logo { max-height: 80px; }
-        .title { font-size: 32px; font-weight: bold; }
-        .client { margin-bottom: 30px; }
-        .table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .table th, .table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        .table th { background-color: #f5f5f5; }
-        .total { text-align: right; font-size: 20px; font-weight: bold; }
+        body {
+          font-family: Arial, sans-serif;
+          margin: 40px;
+          color: #333;
+        }
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 40px;
+        }
+        .logo {
+          max-height: 80px;
+        }
+        .section {
+          margin-bottom: 30px;
+        }
+        .table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 30px;
+        }
+        .table th, .table td {
+          border: 1px solid #ddd;
+          padding: 12px;
+          text-align: left;
+        }
+        .table th {
+          background-color: #f5f5f5;
+        }
+        .total {
+          text-align: right;
+          font-size: 18px;
+          font-weight: bold;
+        }
       </style>
     </head>
     <body>
 
       <div class="header">
-        <div class="title">Quote</div>
-        ${logoUrl ? `<img src="${logoUrl}" class="logo" />` : ''}
+        <h1>Quote</h1>
+        ${logoUrl ? `<img src="${logoUrl}" class="logo" alt="Logo" />` : ''}
       </div>
 
-      <div class="client">
-        <p><strong>Client Name:</strong> ${quote.client_name}</p>
-        <p><strong>Client Email:</strong> ${quote.client_email}</p>
-        <p><strong>Reference:</strong> ${quote.reference || ''}</p>
+      <div class="section">
+        <p><strong>Client Name:</strong> ${escapeHtml(quote.client_name)}</p>
+        <p><strong>Client Email:</strong> ${escapeHtml(quote.client_email)}</p>
+        <p><strong>Reference:</strong> ${escapeHtml(quote.reference || '')}</p>
       </div>
 
       <table class="table">
@@ -51,7 +83,7 @@ export function generateQuoteHTML(quote: Quote, logoUrl?: string): string {
         <tbody>
           ${items.map((item: LineItem) => `
             <tr>
-              <td>${item.description}</td>
+              <td>${escapeHtml(item.description)}</td>
               <td>${item.quantity}</td>
               <td>R ${item.price.toFixed(2)}</td>
               <td>R ${(item.quantity * item.price).toFixed(2)}</td>
@@ -66,5 +98,5 @@ export function generateQuoteHTML(quote: Quote, logoUrl?: string): string {
 
     </body>
     </html>
-  `;
+  `
 }
