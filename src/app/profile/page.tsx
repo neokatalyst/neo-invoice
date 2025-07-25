@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 import Header from '@/components/Header'
 import Link from 'next/link'
 
-export default function ViewProfilePage() {
+export default function Page() {
   const router = useRouter()
   const [profile, setProfile] = useState<any | null>(null)
   const [logoUrl, setLogoUrl] = useState<string>('/default-logo.png')

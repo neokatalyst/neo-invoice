@@ -1,3 +1,9 @@
+export type InvoiceItem = {
+  description: string
+  quantity: number
+  price: number
+}
+
 export type Invoice = {
   id: string
   client_name: string
@@ -6,4 +12,6 @@ export type Invoice = {
   status: string
   created_at: string
   reference?: string | null
+  items?: InvoiceItem[]
+  notes?: string
 }

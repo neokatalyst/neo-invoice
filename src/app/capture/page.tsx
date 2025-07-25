@@ -8,7 +8,7 @@ import Header from '@/components/Header'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
-export default function CapturePage() {
+export default function Page() {
   useAuthRedirect() // ✅ apply redirect protection
 
   const [formData, setFormData] = useState({

@@ -1,36 +1,41 @@
-// src/lib/generateInvoiceEmailHTML.ts
-import type { Invoice } from '@/types/invoice'   // see step 2
+import type { Invoice } from '@/types/invoice'
+import type { InvoiceTemplateInput } from '@/types/invoiceTemplate'
+import { generateInvoiceHTML } from '@/lib/pdfTemplates/invoiceTemplate'
+import { chromium } from 'playwright'
 
-export function generateInvoiceEmailHTML(
-  invoice: Invoice,
-  pdfUrl: string
-): string {
-  const reference = invoice.reference || invoice.id
-  const total     = (invoice.total ?? 0).toFixed(2)
-  const client    = invoice.client_name || 'Customer'
+export async function generateInvoicePDF(invoice: Invoice): Promise<Blob> {
+  const templateData: InvoiceTemplateInput = {
+    company_logo_url: '/default-logo.png',
+    company_name: 'Your Company Name',
+    company_address: '123 Main Street, Johannesburg',
+    client_name: invoice.client_name,
+    client_email: invoice.client_email,
+    invoice_reference: invoice.reference || invoice.id,
+    invoice_date: new Date(invoice.created_at).toLocaleDateString(),
+    due_date: '',
+    items: invoice.items?.map((item: { description: string; quantity: number; price: number }) => ({
+      description: item.description,
+      quantity: item.quantity,
+      price: item.price.toFixed(2),
+      total: (item.quantity * item.price).toFixed(2),
+    })) ?? [],
+    subtotal: invoice.total.toFixed(2),
+    vat: '0.00',
+    total: invoice.total.toFixed(2),
+    notes: invoice.notes ?? '',
+  }
 
-  return `
-    <div style="font-family: Arial, sans-serif; max-width:600px;margin:0 auto;">
-      <h1 style="background:#1d4ed8;color:#fff;padding:20px;text-align:center;">
-        Your Invoice
-      </h1>
-      <p>Hi ${client},</p>
-      <p>Thank you for your business.  Your invoice is below.</p>
-      <p><strong>Reference:</strong> ${reference}</p>
-      <p><strong>Total:</strong> R ${total}</p>
-      <div style="margin:20px 0;text-align:center;">
-        <a href="${pdfUrl}"
-           style="background:#1d4ed8;color:#fff;padding:15px 25px;
-                  text-decoration:none;border-radius:5px;">
-          View Invoice PDF
-        </a>
-      </div>
-      <p>If you have any questions, just reply to this e-mail.</p>
-      <p>Kind regards,<br/>Neo Invoice Team</p>
-      <hr style="margin-top:40px;" />
-      <p style="font-size:12px;color:grey;text-align:center;">
-        Sent via Neo Invoice.
-      </p>
-    </div>
-  `
+  const html = generateInvoiceHTML(templateData)
+
+  const browser = await chromium.launch()
+  const page = await browser.newPage()
+  await page.setContent(html, { waitUntil: 'networkidle' })
+
+  const pdfBuffer = await page.pdf({
+    format: 'A4',
+    margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' },
+  })
+
+  await browser.close()
+  return new Blob([pdfBuffer], { type: 'application/pdf' })
 }

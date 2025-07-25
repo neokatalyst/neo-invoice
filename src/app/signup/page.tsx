@@ -7,7 +7,7 @@ import Header from '@/components/Header'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
-export default function SignUpPage() {
+export default function Page() {
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',

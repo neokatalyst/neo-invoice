@@ -1,8 +1,9 @@
 import { supabase } from '@/lib/supabaseClient'
-import { generateInvoicePdf, Invoice } from '@/lib/generateInvoicePdf'
+import { generateInvoicePDF } from '@/lib/generateInvoicePDF'
+import type { Invoice } from '@/types/invoice'
 
-export async function generateAndUploadInvoicePdf(invoice: Invoice): Promise<string> {
-  const pdfBlob = await generateInvoicePdf(invoice)
+export async function generateAndUploadInvoicePDF(invoice: Invoice): Promise<string> {
+  const pdfBlob = await generateInvoicePDF(invoice)
 
   const filename = `invoice-${invoice.id}-${Date.now()}.pdf`
   const { data, error } = await supabase.storage.from('invoices').upload(filename, pdfBlob, {

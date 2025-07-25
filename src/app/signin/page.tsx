@@ -7,7 +7,7 @@ import Header from '@/components/Header'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
-export default function SignInPage() {
+export default function Page() {
   const [formData, setFormData] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const router = useRouter()
