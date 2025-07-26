@@ -9,12 +9,12 @@ import toast from 'react-hot-toast'
 import Link from 'next/link'
 
 export default function Page() {
-  useAuthRedirect() // ✅ apply redirect protection
+  useAuthRedirect() // ✅ Protect page
 
   const [formData, setFormData] = useState({
     client_name: '',
     client_email: '',
-    amount: '',
+    total: '',
     status: 'unpaid',
   })
 
@@ -31,15 +31,27 @@ export default function Page() {
     setLoading(true)
     setError(null)
 
-    const { client_name, client_email, amount, status } = formData
+    const { client_name, client_email, total, status } = formData
+
+    // ✅ Get authenticated user
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      toast.error('User not authenticated')
+      setLoading(false)
+      return
+    }
 
     const { error } = await supabase.from('invoices').insert([
       {
         client_name,
         client_email,
-        amount: parseFloat(amount),
+        total: parseFloat(total),
         status,
         created_at: new Date().toISOString(),
+        user_id: user.id, // ✅ Required for RLS
       },
     ])
 
@@ -48,7 +60,7 @@ export default function Page() {
       toast.error(error.message)
     } else {
       toast.success('Invoice created successfully!')
-      router.push('/client-dashboard/invoices/view')
+      router.push('/client-dashboard/invoices')
     }
 
     setLoading(false)
@@ -80,9 +92,9 @@ export default function Page() {
           />
           <input
             type="number"
-            name="amount"
-            placeholder="Amount"
-            value={formData.amount}
+            name="total" // ✅ was "amount"
+            placeholder="Total Amount"
+            value={formData.total}
             onChange={handleChange}
             required
             className="w-full border border-gray-300 p-2 rounded"
@@ -110,7 +122,7 @@ export default function Page() {
 
         <div className="mt-8 text-center">
           <Link
-            href="/client-dashboard/invoices/view"
+            href="/client-dashboard/invoices"
             className="inline-block px-6 py-2 bg-gray-800 text-white rounded hover:bg-gray-900"
           >
             Go to Dashboard

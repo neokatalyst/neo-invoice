@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import InvoiceActions from '@/components/InvoiceActions'
+import { downloadInvoiceFromFunction } from '@/lib/downloadInvoiceFromFunction'
 
 type Invoice = {
   id: string
@@ -48,7 +50,7 @@ export default function InvoiceListPage() {
   return (
     <div className="min-h-screen bg-gray-50 text-black">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Stats Section */}
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-4 rounded shadow text-center">
             <h2 className="text-lg font-bold">Total Invoices</h2>
@@ -68,7 +70,7 @@ export default function InvoiceListPage() {
           </div>
         </div>
 
-        {/* Table Section */}
+        {/* Table */}
         <h1 className="text-2xl font-bold mb-4">All Invoices</h1>
 
         <div className="overflow-x-auto">
@@ -97,11 +99,7 @@ export default function InvoiceListPage() {
                       ? format(new Date(invoice.paid_at), 'dd MMM yyyy')
                       : <span className="text-gray-400 italic">Not Paid</span>}
                   </td>
-                  <td className="p-3">
-                    <Link href={`/client-dashboard/invoices/view/${invoice.id}`}>
-                      <button className="text-blue-600 hover:underline">View</button>
-                    </Link>
-                  </td>
+                  <InvoiceActions invoice={invoice} />
                 </tr>
               ))}
             </tbody>
