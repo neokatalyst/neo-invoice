@@ -1,7 +1,14 @@
 import { serve } from 'https://deno.land/std@0.192.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.52.1'
+
+// 🚀 Initialize Supabase client using secure env vars
+const supabase = createClient(
+  Deno.env.get('PRIVATE_SUPABASE_URL')!,
+  Deno.env.get('PRIVATE_SUPABASE_SERVICE_ROLE_KEY')!
+)
 
 serve(async (req: Request) => {
-  // ✅ Handle preflight requests
+  // ✅ Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('OK', {
       status: 200,
@@ -19,8 +26,26 @@ serve(async (req: Request) => {
     })
   }
 
-  // ✅ Replace with real PDF logic
-  const pdfContent = `Invoice PDF for ${invoice_id}`
+  console.log('🔍 Fetching invoice ID:', invoice_id)
+
+  const { data: invoice, error } = await supabase
+    .from('invoices')
+    .select('*')
+    .eq('id', invoice_id)
+    .single()
+
+  if (error || !invoice) {
+    console.error('❌ Invoice not found:', error?.message)
+    return new Response('Invoice not found', {
+      status: 404,
+      headers: corsHeaders(),
+    })
+  }
+
+  console.log('✅ Invoice fetched:', invoice)
+
+  // 🧪 Replace with real HTML → PDF generation later
+  const pdfContent = `Invoice PDF for ${invoice.reference ?? invoice.id}`
   const pdfBlob = new Blob([pdfContent], { type: 'application/pdf' })
 
   return new Response(pdfBlob, {
@@ -28,14 +53,14 @@ serve(async (req: Request) => {
     headers: {
       ...corsHeaders(),
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="invoice-${invoice_id}.pdf"`,
+      'Content-Disposition': `inline; filename="invoice-${invoice.reference ?? invoice.id}.pdf"`,
     },
   })
 })
 
 function corsHeaders() {
   return {
-    'Access-Control-Allow-Origin': '*', // Change to frontend URL if needed
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }

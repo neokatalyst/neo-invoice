@@ -24,8 +24,8 @@ serve(async (req) => {
   }
 
   const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    Deno.env.get('PRIVATE_SUPABASE_URL')!,
+    Deno.env.get('PRIVATE_SUPABASE_SERVICE_ROLE_KEY')!
   )
 
   console.log('🔎 Fetching quote ID:', quote_id)
