@@ -10,14 +10,23 @@ export async function previewQuoteFromFunction(quoteId: string) {
       data: { session },
     } = await supabase.auth.getSession()
 
+    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL}/generate-quote-pdf?quote_id=${quoteId}`,
       {
-        headers: session?.access_token
-          ? { Authorization: `Bearer ${session.access_token}` }
-          : undefined,
+        headers: isLocal
+          ? {} // 🧪 No Authorization header for local dev
+          : session?.access_token
+            ? { Authorization: `Bearer ${session.access_token}` }
+            : {},
       }
     )
+
+    if (!res.ok) {
+      console.error('Failed to fetch quote HTML:', await res.text())
+      throw new Error('Fetch failed')
+    }
 
     const html = await res.text()
 

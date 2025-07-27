@@ -32,6 +32,20 @@ export default function InvoiceActions({ invoice }: { invoice: Invoice }) {
     }
   }
 
+  const handleSend = async () => {
+  const res = await fetch('/api/sendInvoiceEmail', {
+    method: 'POST',
+    body: JSON.stringify({ invoice_id: invoice.id }),
+    headers: { 'Content-Type': 'application/json' },
+  })
+
+  if (res.ok) {
+    toast.success('Invoice email sent')
+  } else {
+    toast.error('Failed to send invoice')
+  }
+}
+
   return (
     <td className="p-3 flex gap-3">
       <button onClick={handlePreview} className="text-blue-600 hover:underline">
@@ -40,6 +54,15 @@ export default function InvoiceActions({ invoice }: { invoice: Invoice }) {
       <button onClick={handleDownload} className="text-green-600 hover:underline">
         Download
       </button>
+
+      <button onClick={handleSend} className="text-purple-600 hover:underline">
+  Email
+</button>
+
     </td>
   )
+
+
+
+
 }

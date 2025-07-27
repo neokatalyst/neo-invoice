@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
-import Link from 'next/link'
 import { format } from 'date-fns'
 import InvoiceActions from '@/components/InvoiceActions'
-import { downloadInvoiceFromFunction } from '@/lib/downloadInvoiceFromFunction'
+
 
 type Invoice = {
   id: string

@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
-//import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
 
-type Quote = {
+
+export type Quote = {
   id: string
   reference: string | null
   client_name: string
+  client_email: string
   total: number
   status: string
   created_at: string
@@ -21,13 +22,12 @@ type Quote = {
 export default function QuoteListPage() {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [loading, setLoading] = useState(true)
- // const router = useRouter()
 
   useEffect(() => {
     const fetchQuotes = async () => {
       const { data, error } = await supabase
         .from('quotes')
-        .select('id, reference, client_name, total, status, created_at, converted_at, invoice_id')
+        .select('id, reference, client_name, client_email, total, status, created_at, converted_at, invoice_id')
         .order('created_at', { ascending: false })
 
       if (error) toast.error(error.message)
@@ -37,6 +37,10 @@ export default function QuoteListPage() {
 
     fetchQuotes()
   }, [])
+
+
+
+
 
   const totalQuotes = quotes.length
   const convertedQuotes = quotes.filter(q => q.status === 'converted').length
@@ -48,27 +52,13 @@ export default function QuoteListPage() {
   return (
     <div className="min-h-screen bg-gray-50 text-black">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded shadow text-center">
-            <h2 className="text-lg font-bold">Total Quotes</h2>
-            <p className="text-2xl">{totalQuotes}</p>
-          </div>
-          <div className="bg-green-100 p-4 rounded shadow text-center">
-            <h2 className="text-lg font-bold">Converted</h2>
-            <p className="text-2xl text-green-700">{convertedQuotes}</p>
-          </div>
-          <div className="bg-yellow-100 p-4 rounded shadow text-center">
-            <h2 className="text-lg font-bold">Pending</h2>
-            <p className="text-2xl text-yellow-700">{pendingQuotes}</p>
-          </div>
-          <div className="bg-red-100 p-4 rounded shadow text-center">
-            <h2 className="text-lg font-bold">Declined</h2>
-            <p className="text-2xl text-red-700">{declinedQuotes}</p>
-          </div>
+          <StatCard label="Total Quotes" value={totalQuotes} />
+          <StatCard label="Converted" value={convertedQuotes} color="green" />
+          <StatCard label="Pending" value={pendingQuotes} color="yellow" />
+          <StatCard label="Declined" value={declinedQuotes} color="red" />
         </div>
 
-        {/* Table Section */}
         <h1 className="text-2xl font-bold mb-4">All Quotes</h1>
 
         <div className="overflow-x-auto">
@@ -101,7 +91,7 @@ export default function QuoteListPage() {
                       <span className="text-gray-400 italic">None</span>
                     )}
                   </td>
-                  <td className="p-3 space-x-2">
+                  <td className="p-3 space-y-1 flex flex-col">
                     <Link href={`/client-dashboard/quotes/view/${quote.id}`}>
                       <button className="text-blue-600 hover:underline">View</button>
                     </Link>
@@ -110,6 +100,7 @@ export default function QuoteListPage() {
                         <button className="text-green-600 hover:underline">Respond</button>
                       </Link>
                     )}
+                 
                   </td>
                 </tr>
               ))}
@@ -120,3 +111,10 @@ export default function QuoteListPage() {
     </div>
   )
 }
+
+const StatCard = ({ label, value, color = 'gray' }: { label: string, value: number, color?: string }) => (
+  <div className={`bg-${color}-100 p-4 rounded shadow text-center`}>
+    <h2 className="text-lg font-bold">{label}</h2>
+    <p className={`text-2xl text-${color}-700`}>{value}</p>
+  </div>
+)

@@ -1,10 +1,11 @@
-'use client'
+"use client"
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useParams, useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import { previewQuoteFromFunction } from '@/lib/previewQuoteFromFunction'
 
 type Quote = {
   id: string
@@ -83,9 +84,9 @@ export default function QuoteDetailPage() {
     router.refresh()
   }
 
-  const viewPdf = () => {
+  const viewPdf = async () => {
     if (!quote) return
-    window.open(`/api/generateQuotePdf?quote_id=${quote.id}`, '_blank')
+    await previewQuoteFromFunction(quote.id)
   }
 
   const sendEmail = async () => {
@@ -140,7 +141,7 @@ export default function QuoteDetailPage() {
           Send Email
         </button>
         {quote.invoice_id && (
-          <Link href={`/invoice/view?id=${quote.invoice_id}`}>
+          <Link href={`/client-dashboard/invoices/view/${quote.invoice_id}`}>
             <button className="bg-purple-600 text-white px-4 py-2 rounded">
               View Invoice
             </button>

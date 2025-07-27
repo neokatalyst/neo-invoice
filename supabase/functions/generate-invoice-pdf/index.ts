@@ -58,10 +58,16 @@ serve(async (req) => {
 
     console.log('🧾 Returning rendered invoice HTML')
 
-    return new Response(html, {
-      headers: { 'Content-Type': 'text/html' },
-      status: 200,
-    })
+return new Response(html, {
+  status: 200,
+  headers: {
+    'Content-Type': 'text/html',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, content-type',
+  },
+})
+
+
   } catch (err) {
     console.error('💥 Unexpected function error:', err)
     return new Response('Internal server error', { status: 500 })
