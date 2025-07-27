@@ -2,10 +2,15 @@ import { serve } from 'https://deno.land/std@0.192.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.52.1'
 import { generateQuoteHTML } from '../../utils/generateQuoteHTML.ts'
 
+// ✅ Secure Supabase client using secrets
+const supabase = createClient(
+  Deno.env.get('PRIVATE_SUPABASE_URL')!,
+  Deno.env.get('PRIVATE_SUPABASE_SERVICE_ROLE_KEY')!
+)
+
 serve(async (req) => {
   console.log('📥 Incoming request to generate-quote-pdf')
 
-  // ✅ Handle preflight CORS requests
   if (req.method === 'OPTIONS') {
     return new Response('OK', {
       status: 200,
@@ -22,11 +27,6 @@ serve(async (req) => {
       headers: corsHeaders(),
     })
   }
-
-  const supabase = createClient(
-    Deno.env.get('PRIVATE_SUPABASE_URL')!,
-    Deno.env.get('PRIVATE_SUPABASE_SERVICE_ROLE_KEY')!
-  )
 
   console.log('🔎 Fetching quote ID:', quote_id)
 
@@ -53,14 +53,14 @@ serve(async (req) => {
     headers: {
       ...corsHeaders(),
       'Content-Type': 'text/html',
-      'Content-Disposition': `inline; filename="quote-${quote_id}.html"`,
+      'Content-Disposition': `inline; filename="quote-${quote.reference ?? quote.id}.html"`,
     },
   })
 })
 
 function corsHeaders() {
   return {
-    'Access-Control-Allow-Origin': '*', // Change to frontend domain for production if needed
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }

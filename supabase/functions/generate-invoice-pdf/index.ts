@@ -1,14 +1,12 @@
 import { serve } from 'https://deno.land/std@0.192.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.52.1'
 
-// 🚀 Initialize Supabase client using secure env vars
 const supabase = createClient(
   Deno.env.get('PRIVATE_SUPABASE_URL')!,
   Deno.env.get('PRIVATE_SUPABASE_SERVICE_ROLE_KEY')!
 )
 
 serve(async (req: Request) => {
-  // ✅ Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('OK', {
       status: 200,
@@ -26,8 +24,6 @@ serve(async (req: Request) => {
     })
   }
 
-  console.log('🔍 Fetching invoice ID:', invoice_id)
-
   const { data: invoice, error } = await supabase
     .from('invoices')
     .select('*')
@@ -35,16 +31,13 @@ serve(async (req: Request) => {
     .single()
 
   if (error || !invoice) {
-    console.error('❌ Invoice not found:', error?.message)
+    console.error('❌ Invoice fetch failed:', error?.message)
     return new Response('Invoice not found', {
       status: 404,
       headers: corsHeaders(),
     })
   }
 
-  console.log('✅ Invoice fetched:', invoice)
-
-  // 🧪 Replace with real HTML → PDF generation later
   const pdfContent = `Invoice PDF for ${invoice.reference ?? invoice.id}`
   const pdfBlob = new Blob([pdfContent], { type: 'application/pdf' })
 
