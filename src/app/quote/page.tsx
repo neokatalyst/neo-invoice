@@ -77,7 +77,7 @@ export default function Page() {
   }
 
   const viewPdf = (quoteId: string) => {
-    window.open(`/api/generateQuotePdf?quote_id=${quoteId}`, '_blank')
+    window.open(`/api/view-quote-pdf?quote_id=${quoteId}`, '_blank')
   }
 
   const sendEmail = async (quoteId: string) => {

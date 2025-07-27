@@ -4,15 +4,19 @@ export async function previewInvoiceFromFunction(invoiceId: string) {
   try {
     const html2pdf = (await import('html2pdf.js')).default
 
+    const functionsUrl =
+      process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL ||
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`
+
     const res = await fetch(
-  `${process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL}/generate-invoice-pdf?invoice_id=${invoiceId}`,
-  {
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-    }
-  }
-)
+      `${functionsUrl}/generate-invoice-pdf?invoice_id=${invoiceId}`,
+      {
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
 
 
     const html = await res.text()

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   if (error || !quote) return new Response('Quote not found', { status: 404 })
 
-  const pdfUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/generateQuotePdf?quote_id=${quote.id}`
+  const pdfUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/view-quote-pdf?quote_id=${quote.id}`
   const html = generateQuoteEmailHTML(quote, pdfUrl)
 
   try {

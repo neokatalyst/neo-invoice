@@ -10,8 +10,12 @@ export async function downloadQuoteFromFunction(quoteId: string) {
       data: { session },
     } = await supabase.auth.getSession()
 
+    const functionsUrl =
+      process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL ||
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`
+
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL}/generate-quote-pdf?quote_id=${quoteId}`,
+      `${functionsUrl}/generate-quote-pdf?quote_id=${quoteId}`,
       {
         headers: session?.access_token
           ? { Authorization: `Bearer ${session.access_token}` }

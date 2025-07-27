@@ -48,7 +48,10 @@ export default function InvoiceDetailPage() {
 
       <button
         onClick={() =>
-          window.open(`/functions/v1/generate-invoice-pdf?invoice_id=${invoice.id}`, '_blank')
+          window.open(
+            `${process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL || `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`}/generate-invoice-pdf?invoice_id=${invoice.id}`,
+            '_blank'
+          )
         }
         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
       >
