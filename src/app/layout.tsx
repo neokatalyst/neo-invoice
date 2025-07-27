@@ -11,7 +11,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       if (process.env.NODE_ENV === 'production') {
         navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('✅ Service Worker registered at:', reg.scope))
+          .then(reg => {
+            console.log('✅ Service Worker registered at:', reg.scope)
+            // 🚀 Ensure latest version is active
+            reg.update()
+          })
           .catch(err => console.error('❌ Service Worker registration failed:', err))
       } else {
         // ✅ Disable caching interference in development
