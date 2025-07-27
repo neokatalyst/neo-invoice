@@ -34,3 +34,20 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Environment Setup
+
+Create a `.env` file based on `.env.example` and provide the following values:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_FUNCTION_URL= # optional; defaults to "$NEXT_PUBLIC_SUPABASE_URL/functions/v1"
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+These keys are required for the API routes and Supabase functions to work correctly.
+
+## Progressive Web App
+
+The service worker is generated using [`next-pwa`](https://github.com/shadowwalker/next-pwa). It is enabled in production builds and disabled during development. You can change this behaviour in `next.config.ts`.

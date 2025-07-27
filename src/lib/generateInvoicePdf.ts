@@ -1,7 +1,10 @@
 // src/lib/generateInvoicePdf.ts
 
 export async function generateInvoicePdf(invoiceId: string): Promise<Blob> {
-  const url = `${process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL}/generate-invoice-pdf?invoice_id=${invoiceId}`
+  const functionsUrl =
+    process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL ||
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`
+  const url = `${functionsUrl}/generate-invoice-pdf?invoice_id=${invoiceId}`
 
   const response = await fetch(url)
   if (!response.ok) {

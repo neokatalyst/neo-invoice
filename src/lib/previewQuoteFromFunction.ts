@@ -12,16 +12,17 @@ export async function previewQuoteFromFunction(quoteId: string) {
 
     const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL}/generate-quote-pdf?quote_id=${quoteId}`,
-      {
-        headers: isLocal
-          ? {} // 🧪 No Authorization header for local dev
-          : session?.access_token
-            ? { Authorization: `Bearer ${session.access_token}` }
-            : {},
-      }
-    )
+    const functionsUrl =
+      process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL ||
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`
+
+    const res = await fetch(`${functionsUrl}/generate-quote-pdf?quote_id=${quoteId}`, {
+      headers: isLocal
+        ? {} // 🧪 No Authorization header for local dev
+        : session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : {},
+    })
 
     if (!res.ok) {
       console.error('Failed to fetch quote HTML:', await res.text())
