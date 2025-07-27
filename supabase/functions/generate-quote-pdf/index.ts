@@ -1,16 +1,27 @@
 // supabase/functions/generate-quote-pdf/index.ts
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+
+import { serve } from 'https://deno.land/std@0.192.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.52.1'
 import { generateQuoteHTML } from '../../utils/generateQuoteHTML.ts'
 
 serve(async (req) => {
   console.log('📥 Incoming request to generate-quote-pdf')
 
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders(),
+    })
+  }
+
   const url = new URL(req.url)
   const quote_id = url.searchParams.get('quote_id')
 
   if (!quote_id) {
-    return new Response('Missing quote_id', { status: 400 })
+    return new Response('Missing quote_id', {
+      status: 400,
+      headers: corsHeaders(),
+    })
   }
 
   const supabase = createClient(
@@ -28,7 +39,10 @@ serve(async (req) => {
 
   if (error || !quote) {
     console.error('❌ Error fetching quote:', error?.message)
-    return new Response('Quote not found', { status: 404 })
+    return new Response('Quote not found', {
+      status: 404,
+      headers: corsHeaders(),
+    })
   }
 
   console.log('✅ Quote fetched:', quote)
@@ -36,9 +50,18 @@ serve(async (req) => {
   const html = generateQuoteHTML(quote)
 
   return new Response(html, {
+    status: 200,
     headers: {
+      ...corsHeaders(),
       'Content-Type': 'text/html',
-      'Access-Control-Allow-Origin': '*', // 👈 allow preview to work
     },
   })
 })
+
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*', // or restrict to 'https://neo-invoice.vercel.app'
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+}
