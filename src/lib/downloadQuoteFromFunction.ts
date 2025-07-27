@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient'
 
-export async function previewInvoiceFromFunction(invoiceId: string) {
+export async function downloadQuoteFromFunction(quoteId: string) {
   if (typeof window === 'undefined') return
 
   try {
@@ -11,7 +11,7 @@ export async function previewInvoiceFromFunction(invoiceId: string) {
     } = await supabase.auth.getSession()
 
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL}/generate-invoice-pdf?invoice_id=${invoiceId}`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL}/generate-quote-pdf?quote_id=${quoteId}`,
       {
         headers: session?.access_token
           ? { Authorization: `Bearer ${session.access_token}` }
@@ -19,13 +19,18 @@ export async function previewInvoiceFromFunction(invoiceId: string) {
       }
     )
 
+    if (!res.ok) {
+      console.error('Failed to fetch quote HTML:', await res.text())
+      throw new Error('Fetch failed')
+    }
+
     const html = await res.text()
 
     const container = document.createElement('div')
     container.innerHTML = html
     document.body.appendChild(container)
 
-    await html2pdf().from(container).save(`invoice-${invoiceId}.pdf`)
+    await html2pdf().from(container).save(`quote-${quoteId}.pdf`)
     document.body.removeChild(container)
   } catch (err) {
     console.error('Download error:', err)
