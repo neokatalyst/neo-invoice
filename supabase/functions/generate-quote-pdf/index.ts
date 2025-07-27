@@ -1,5 +1,3 @@
-// supabase/functions/generate-quote-pdf/index.ts
-
 import { serve } from 'https://deno.land/std@0.192.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.52.1'
 import { generateQuoteHTML } from '../../utils/generateQuoteHTML.ts'
@@ -7,9 +5,10 @@ import { generateQuoteHTML } from '../../utils/generateQuoteHTML.ts'
 serve(async (req) => {
   console.log('📥 Incoming request to generate-quote-pdf')
 
+  // ✅ Handle preflight CORS requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
+    return new Response('OK', {
+      status: 200,
       headers: corsHeaders(),
     })
   }
@@ -54,13 +53,14 @@ serve(async (req) => {
     headers: {
       ...corsHeaders(),
       'Content-Type': 'text/html',
+      'Content-Disposition': `inline; filename="quote-${quote_id}.html"`,
     },
   })
 })
 
 function corsHeaders() {
   return {
-    'Access-Control-Allow-Origin': '*', // or restrict to 'https://neo-invoice.vercel.app'
+    'Access-Control-Allow-Origin': '*', // Change to frontend domain for production if needed
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
