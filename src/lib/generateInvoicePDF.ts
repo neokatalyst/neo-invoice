@@ -1,15 +1,14 @@
 export async function generateInvoicePdf(invoice_id: string): Promise<Blob> {
-  const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-invoice-pdf?invoice_id=${invoice_id}`
+  const url = `${process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL}/generate-invoice-pdf?invoice_id=${invoice_id}`
 
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-    },
-  })
+  const response = await fetch(url)
 
   if (!response.ok) {
-    throw new Error('Failed to generate invoice PDF')
+    throw new Error('Failed to fetch invoice HTML')
   }
 
-  return await response.blob()
+  const html = await response.text()
+  const blob = new Blob([html], { type: 'text/html' })
+
+  return blob
 }

@@ -29,7 +29,7 @@ export default function Page() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return router.push('/signin')
 
-      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      const { data, error } = await supabase.from('profiles').select('*').eq('user_id', user.id).single()
       if (error) setError(error.message)
       if (data) {
         setProfile({
@@ -102,7 +102,7 @@ export default function Page() {
     const full_name = profile.full_name.trim() || `${profile.first_name} ${profile.last_name}`.trim()
 
     const updates = {
-      id: user.id,
+      user_id: user.id,
       first_name: profile.first_name,
       last_name: profile.last_name,
       full_name,
