@@ -1,11 +1,22 @@
+import { supabase } from './supabaseClient'
+
 export async function downloadInvoiceFromFunction(invoiceId: string) {
   if (typeof window === 'undefined') return
 
   try {
     const html2pdf = (await import('html2pdf.js')).default
 
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL}/generate-invoice-pdf?invoice_id=${invoiceId}`
+      `${process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL}/generate-invoice-pdf?invoice_id=${invoiceId}`,
+      {
+        headers: session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : undefined,
+      }
     )
 
     if (!res.ok) {
