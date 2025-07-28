@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateInvoiceHTML } from '@/lib/pdfTemplates/invoiceTemplate'
-import type { Invoice } from '@/types/invoice'
 
 // ✅ Admin Supabase client
 const supabaseAdmin = createClient(

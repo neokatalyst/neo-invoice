@@ -1,7 +1,7 @@
 // src/lib/generateInvoicePdf.ts
 import { createClient } from '@supabase/supabase-js'
 import { generateInvoiceHTML } from '@/lib/pdfTemplates/invoiceTemplate'
-import type { Invoice } from '@/types/invoice'
+
 
 export async function generateInvoicePdf(invoiceId: string): Promise<Blob> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
