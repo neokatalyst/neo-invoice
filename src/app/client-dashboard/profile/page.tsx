@@ -100,10 +100,17 @@ export default function UserListPage() {
 
 <div className="mt-6">
   <Link href="/client-dashboard/profile/users/invite">
-    <button className="bg-green-600 text-white px-4 py-2 rounded">
+    <button className="bg-green-800 text-white px-4 py-2 rounded">
       + Invite User
     </button>
   </Link>
+
+<div className="mt-6"></div>
+  <Link href="/profile">
+        <button className="bg-gray-800 text-white px-4 py-2 rounded">
+          View Profile
+        </button>
+</Link>
 </div>
 
 

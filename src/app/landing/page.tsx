@@ -33,7 +33,7 @@ export default function LandingPage() {
           <h1 className="text-xl font-bold text-gray-800">Neo-Invoice</h1>
           <nav className="space-x-4 flex items-center">
             <Link href="/landing" className="text-gray-600 hover:text-black">Home</Link>
-            <Link href="/quote/capture" className="text-gray-600 hover:text-black">Quote Capture</Link>
+            <Link href="/profile" className="text-gray-600 hover:text-black">View Profile</Link>
             <Link href="/client-dashboard" className="text-gray-600 hover:text-black">Dashboard</Link>
 
             {userName && (
