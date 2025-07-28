@@ -15,7 +15,7 @@ export async function sendConfirmationEmail({
   const html = generateConfirmEmailHTML(name, confirmationUrl)
 
   const { error } = await resend.emails.send({
-    from: 'Neo-Invoice <support@neokatalyst.co.za>',
+    from: 'Neo-Invoice <info@neokatalyst.co.za>',
     to: email,
     subject: 'Confirm your Neo-Invoice account',
     html,
