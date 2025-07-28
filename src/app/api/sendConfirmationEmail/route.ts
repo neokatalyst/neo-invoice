@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         role: 'admin',
         organisation_id: 'temp-org'
       },
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '')}/auth/callback`,
     }
   })
 
