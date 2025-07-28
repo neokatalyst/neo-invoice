@@ -1,13 +1,12 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -35,8 +34,6 @@ export default function AuthCallbackPage() {
         toast.error('Missing token in callback URL')
         router.push('/signin')
       }
-
-      setLoading(false)
     }
 
     handleCallback()

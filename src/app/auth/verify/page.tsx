@@ -39,7 +39,7 @@ export default function VerifyPage() {
       } else {
         toast.error(data.error || 'Failed to resend email.')
       }
-    } catch (err) {
+    } catch {
       toast.error('Network error. Please try again.')
     }
     setResending(false)
