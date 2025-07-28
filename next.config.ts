@@ -1,7 +1,7 @@
-import type { NextConfig } from 'next'
 import withPWA from 'next-pwa'
+import type { NextConfig } from 'next'
 
-const nextConfig: NextConfig = {
+const baseConfig: NextConfig = {
   reactStrictMode: true,
   experimental: {
     serverActions: {
@@ -30,8 +30,9 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withPWA({
-  ...nextConfig,
+// Correctly wrap base config and isolate PWA config under `pwa` key
+const nextConfig = withPWA({
+  ...baseConfig,
   pwa: {
     dest: 'public',
     disable: process.env.NODE_ENV === 'development',
@@ -39,3 +40,5 @@ export default withPWA({
     skipWaiting: true,
   },
 })
+
+export default nextConfig
