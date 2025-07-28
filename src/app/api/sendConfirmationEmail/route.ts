@@ -5,7 +5,7 @@ import { sendConfirmationEmail } from '@/lib/email/sendConfirmationEmail'
 // ✅ Use private env variables for secure admin access
 const supabaseAdmin = createClient(
    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.PRIVATE_SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
 export async function POST(req: NextRequest) {
