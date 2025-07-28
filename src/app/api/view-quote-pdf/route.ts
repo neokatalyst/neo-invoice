@@ -26,9 +26,10 @@ export async function GET(req: NextRequest) {
   }
 
   const html = await generateQuoteHTML(quote)
+
   return new Response(html, {
     headers: {
-      'Content-Type': 'text/html'
-    }
+      'Content-Type': 'text/html',
+    },
   })
 }
