@@ -26,10 +26,10 @@ export default function Page() {
 
       if (error) {
         setError(error.message)
-      } else if (data) {
+      } else {
         setProfile(data)
 
-        const logoPath = data.logo_url?.trim() ?? ''
+        const logoPath = data?.logo_url?.trim() ?? ''
         if (logoPath) {
           const { data: signed, error: signedError } = await supabase
             .storage.from('logos')
@@ -43,14 +43,25 @@ export default function Page() {
           }
         }
       }
+
       setLoading(false)
     }
 
     fetchProfile()
   }, [router])
 
+  // ✅ Auto-redirect to edit-profile if profile not found and no error
+  useEffect(() => {
+    if (!loading && profile === null && !error) {
+      router.push('/profile/edit-profile')
+    }
+  }, [loading, profile, error, router])
+
   if (loading) return <div className="p-10 text-center">Loading profile...</div>
   if (error) return <div className="p-10 text-center text-red-600">Error: {error}</div>
+
+  // ✅ Return nothing while redirecting
+  if (!profile) return null
 
   return (
     <div className="min-h-screen bg-gray-50 text-black">
