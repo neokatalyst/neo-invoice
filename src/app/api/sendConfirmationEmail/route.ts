@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendConfirmationEmail } from '@/lib/email/sendConfirmationEmail'
 
+// ✅ Use private env variables for secure admin access
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.PRIVATE_SUPABASE_URL!,
+  process.env.PRIVATE_SUPABASE_SERVICE_ROLE_KEY!
 )
 
 export async function POST(req: NextRequest) {
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabaseAdmin.auth.admin.generateLink({
     type: 'signup',
     email,
-    password, // ✅ required for 'signup' type
+    password,
     options: {
       data: {
         first_name,
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
         role: 'admin',
         organisation_id: 'temp-org'
       },
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '')}/auth/callback`,
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`, // ⬅️ still okay to use public here
     }
   })
 
