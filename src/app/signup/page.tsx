@@ -28,18 +28,20 @@ export default function SignUpPage() {
 
     const { email, password, first_name, last_name } = formData
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          first_name,
-          last_name,
-          role: 'admin',                // ✅ Added role
-          organisation_id: 'temp-org',  // ✅ Temporary org, to be replaced after profile
-        }
-      }
-    })
+const { error } = await supabase.auth.signUp({
+  email,
+  password,
+  options: {
+    emailRedirectTo: `${window.location.origin}/auth/callback`,
+    data: {
+      first_name,
+      last_name,
+      role: 'admin',
+      organisation_id: 'temp-org',
+    },
+  },
+})
+
 
     if (error) {
       toast.error(error.message)

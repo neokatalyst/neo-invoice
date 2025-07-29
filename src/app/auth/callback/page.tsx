@@ -17,21 +17,20 @@ export default function AuthCallbackPage() {
       const refresh_token = params.get('refresh_token')
 
       if (access_token && refresh_token) {
-        const { error } = await supabase.auth.setSession({
+        const { data, error } = await supabase.auth.setSession({
           access_token,
           refresh_token,
         })
 
         if (error) {
-          toast.error('Failed to save session')
-          console.error('Session error:', error)
+          console.error('Error setting session:', error)
+          toast.error('Could not sign you in.')
         } else {
-          toast.success('Email verified! You are now signed in.')
+          toast.success('Signed in successfully!')
+          router.push('/profile') // or wherever you want them to land after verifying
         }
-
-        router.push('/profile') // Or /client-dashboard
       } else {
-        toast.error('Missing token in callback URL')
+        toast.error('Missing tokens.')
         router.push('/signin')
       }
     }
@@ -40,11 +39,8 @@ export default function AuthCallbackPage() {
   }, [router])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 text-gray-800">
-      <div className="text-center">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-        <p className="text-lg font-medium">Finishing sign-in…</p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center text-gray-700">
+      <p>Verifying your session…</p>
     </div>
   )
 }
