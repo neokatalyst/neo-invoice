@@ -7,7 +7,8 @@
   "build": "next build",
   "vercel-build": "next build",
   "start": "next start",
-  "lint": "next lint"
+  "lint": "next lint",
+  "start:prod": "cp .env.production .env.local && npm run build && npm start"
 },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.10.0",

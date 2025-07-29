@@ -9,38 +9,19 @@ export default function AuthCallbackPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const handleCallback = async () => {
-      const hash = window.location.hash.substring(1)
-      const params = new URLSearchParams(hash)
+    const handleAuth = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession()
 
-      const access_token = params.get('access_token')
-      const refresh_token = params.get('refresh_token')
-
-      if (access_token && refresh_token) {
-        const { error } = await supabase.auth.setSession({
-          access_token,
-          refresh_token,
-        })
-
-        if (error) {
-          console.error('Error setting session:', error)
-          toast.error('Could not sign you in.')
-        } else {
-          toast.success('Signed in successfully!')
-          router.push('/profile')
-        }
+      if (session) {
+        toast.success('Email confirmed!')
+        router.push('/profile')
       } else {
-        toast.error('Missing tokens.')
-        router.push('/signin')
+        toast.error(error?.message || 'Could not confirm email')
       }
     }
 
-    handleCallback()
-  }, [router])
+    handleAuth()
+  }, [])
 
-  return (
-    <div className="min-h-screen flex items-center justify-center text-gray-700">
-      <p>Verifying your session…</p>
-    </div>
-  )
+  return <p>Confirming your email...</p>
 }
