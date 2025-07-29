@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 import { sendConfirmationEmail } from '@/lib/email/sendConfirmationEmail'
+import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
-// ✅ Use private env variables for secure admin access
-const supabaseAdmin = createClient(
-   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+
 
 export async function POST(req: NextRequest) {
   const { email, password, first_name, last_name } = await req.json()
@@ -14,7 +10,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabaseAdmin.auth.admin.generateLink({
     type: 'signup',
     email,
-    password,
+    password, 
     options: {
       data: {
         first_name,
