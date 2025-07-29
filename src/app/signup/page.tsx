@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/Header'
 import toast from 'react-hot-toast'
@@ -18,48 +19,38 @@ export default function SignUpPage() {
   const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const { first_name, last_name, email, password } = formData
-
-    if (!first_name || !last_name || !email || !password) {
-      toast.error('All fields are required.')
-      return
-    }
-
-    if (password.length < 6) {
-      toast.error('Password must be at least 6 characters.')
-      return
-    }
-
     setLoading(true)
 
-    try {
-      // Store for resend fallback
-      localStorage.setItem('signup_name', JSON.stringify({ first_name, last_name }))
-      localStorage.setItem('signup_email', email)
-      localStorage.setItem('signup_password', password)
+    const { email, password, first_name, last_name } = formData
 
-      const res = await fetch('/api/sendConfirmationEmail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ first_name, last_name, email, password })
-      })
-
-      if (res.ok) {
-        toast.success('Account created! Check your inbox to verify.')
-        router.push('/auth/verify')
-      } else {
-        toast.error('Failed to sign up. Please try again.')
-        console.error(await res.json())
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name,
+          last_name,
+          role: 'admin',                // ✅ Added role
+          organisation_id: 'temp-org',  // ✅ Temporary org, to be replaced after profile
+        }
       }
-    } catch (err) {
-      toast.error('Unexpected error. Please try again.')
-      console.error(err)
+    })
+
+    if (error) {
+      toast.error(error.message)
+    } else {
+      localStorage.setItem(
+        'signup_name',
+        JSON.stringify({ first_name, last_name })
+      )
+
+      toast.success('Account created! Complete your profile.')
+      router.push('/profile')  // ✅ Sends to profile onboarding step
     }
 
     setLoading(false)
@@ -75,7 +66,7 @@ export default function SignUpPage() {
           <input type="text" name="last_name" placeholder="Last Name" value={formData.last_name} onChange={handleChange} required className="w-full border border-gray-300 p-2 rounded" />
           <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} required className="w-full border border-gray-300 p-2 rounded" />
           <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} required className="w-full border border-gray-300 p-2 rounded" />
-          <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
+          <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
             {loading ? 'Creating account…' : 'Sign Up'}
           </button>
         </form>
