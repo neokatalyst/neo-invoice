@@ -17,7 +17,7 @@ export default function AuthCallbackPage() {
       const refresh_token = params.get('refresh_token')
 
       if (access_token && refresh_token) {
-        const { data, error } = await supabase.auth.setSession({
+        const { error } = await supabase.auth.setSession({
           access_token,
           refresh_token,
         })
@@ -27,7 +27,7 @@ export default function AuthCallbackPage() {
           toast.error('Could not sign you in.')
         } else {
           toast.success('Signed in successfully!')
-          router.push('/profile') // or wherever you want them to land after verifying
+          router.push('/profile')
         }
       } else {
         toast.error('Missing tokens.')
