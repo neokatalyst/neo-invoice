@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function VerifyPage() {
   const [name, setName] = useState<string | null>(null)
@@ -12,6 +13,7 @@ export default function VerifyPage() {
   useEffect(() => {
     const stored = localStorage.getItem('signup_name')
     const emailStored = localStorage.getItem('signup_email')
+
     if (stored) {
       const { first_name } = JSON.parse(stored)
       setName(first_name)
@@ -27,17 +29,15 @@ export default function VerifyPage() {
 
     setResending(true)
     try {
-      const res = await fetch('/api/sendConfirmationEmail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
       })
 
-      const data = await res.json()
-      if (res.ok) {
-        toast.success('Confirmation email resent.')
+      if (error) {
+        toast.error(error.message || 'Failed to resend email.')
       } else {
-        toast.error(data.error || 'Failed to resend email.')
+        toast.success('Confirmation email resent.')
       }
     } catch {
       toast.error('Network error. Please try again.')

@@ -43,17 +43,19 @@ const { error } = await supabase.auth.signUp({
 })
 
 
-    if (error) {
-      toast.error(error.message)
-    } else {
-      localStorage.setItem(
-        'signup_name',
-        JSON.stringify({ first_name, last_name })
-      )
+if (error) {
+  toast.error(error.message)
+} else {
+  // Save user details for verify screen
+  localStorage.setItem(
+    'signup_name',
+    JSON.stringify({ first_name, last_name })
+  )
+  localStorage.setItem('signup_email', email)
 
-      toast.success('Account created! Complete your profile.')
-      router.push('/profile')  // ✅ Sends to profile onboarding step
-    }
+  toast.success('Account created! Please verify your email.')
+  router.push('/auth/verify')  // ✅ Redirect to verify screen instead
+}
 
     setLoading(false)
   }
