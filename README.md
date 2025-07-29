@@ -44,6 +44,8 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 NEXT_PUBLIC_SUPABASE_FUNCTION_URL= # optional; defaults to "$NEXT_PUBLIC_SUPABASE_URL/functions/v1"
 SUPABASE_SERVICE_ROLE_KEY=
+PRIVATE_SUPABASE_URL=
+PRIVATE_SUPABASE_SERVICE_ROLE_KEY=
 ```
 
 These keys are required for the API routes and Supabase functions to work correctly.
