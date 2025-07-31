@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/Header'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import Turnstile from 'react-turnstile'
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -15,8 +16,19 @@ export default function SignUpPage() {
     password: '',
   })
 
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [isLocalhost, setIsLocalhost] = useState(false)
+
   const router = useRouter()
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isDev = window.location.hostname === 'localhost'
+      setIsLocalhost(isDev)
+      if (isDev) setCaptchaToken('dev-bypass-token')
+    }
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -24,15 +36,20 @@ export default function SignUpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
 
+    if (!captchaToken) {
+      toast.error('Please complete the CAPTCHA.')
+      return
+    }
+
+    setLoading(true)
     const { email, password, first_name, last_name } = formData
 
-    // Step 1: Create user with metadata
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        captchaToken,
         data: {
           first_name,
           last_name,
@@ -48,17 +65,11 @@ export default function SignUpPage() {
       return
     }
 
-    // Step 2: Send custom confirmation email via Resend API
-const response = await fetch('/sendConfirmationEmail', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    email,
-    password,
-    first_name,
-    last_name,
-  }),
-})
+    const response = await fetch('/sendConfirmationEmail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, first_name, last_name }),
+    })
 
     if (!response.ok) {
       const { error } = await response.json()
@@ -67,7 +78,6 @@ const response = await fetch('/sendConfirmationEmail', {
       return
     }
 
-    // Step 3: Store temporary info for verify screen
     localStorage.setItem('signup_name', JSON.stringify({ first_name, last_name }))
     localStorage.setItem('signup_email', email)
 
@@ -119,6 +129,15 @@ const response = await fetch('/sendConfirmationEmail', {
             required
             className="w-full border border-gray-300 p-2 rounded"
           />
+
+          {/* ✅ CAPTCHA only in production */}
+          {!isLocalhost && (
+            <Turnstile
+              sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+              onVerify={(token) => setCaptchaToken(token)}
+            />
+          )}
+
           <button
             type="submit"
             disabled={loading}

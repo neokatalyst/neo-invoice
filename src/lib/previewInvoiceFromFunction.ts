@@ -1,44 +1,93 @@
+'use client'
+
 import { supabase } from './supabaseClient'
+import { generateInvoiceHTML } from '@/lib/pdfTemplates/invoiceTemplate'
 
 export async function previewInvoiceFromFunction(invoiceId: string) {
   if (typeof window === 'undefined') return
 
   try {
-    const html2pdf = (await import('html2pdf.js')).default
+    // 1. Fetch invoice from Supabase
+    const { data: invoice, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('id', invoiceId)
+      .single()
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+    if (error || !invoice) throw new Error('Invoice not found')
 
-    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+    // 2. Formatters
+    const formatDate = (dateString: string) =>
+      new Intl.DateTimeFormat('en-ZA', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(dateString))
 
-    const functionsUrl =
-      process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL ||
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`
+    const formatCurrency = (amount: number) =>
+      new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(amount).replace('ZAR', 'R')
 
-    const res = await fetch(`${functionsUrl}/generate-invoice-pdf?invoice_id=${invoiceId}`, {
-      headers: isLocal
-        ? {} // No auth header for local dev
-        : session?.access_token
-        ? { Authorization: `Bearer ${session.access_token}` }
-        : {},
+    // 3. Format items
+    const items = (invoice.items ?? []) as {
+      description: string
+      quantity: number
+      price: number
+      total: number
+    }[]
+
+    const itemMapped = items.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      price: formatCurrency(item.price ?? 0),
+      total: formatCurrency(item.total ?? 0),
+    }))
+
+    // 4. Get logo
+let logoUrl = '/default-logo.png'
+if (invoice.logo_url && typeof invoice.logo_url === 'string') {
+  const cleanPath = invoice.logo_url.replace(/^logos\//, '')
+  const { data: signed, error } = await supabase.storage
+    .from('logos')
+    .createSignedUrl(cleanPath, 60 * 60)
+
+  if (signed?.signedUrl) {
+    logoUrl = signed.signedUrl
+  } else {
+    console.warn('⚠️ Failed to sign logo URL:', error)
+  }
+}
+
+
+    // 5. Build HTML
+    const html = generateInvoiceHTML({
+      company_logo_url: logoUrl,
+      company_name: invoice.company_name ?? 'Company Name',
+      company_address: invoice.company_address ?? 'Company Address',
+      client_name: invoice.client_name ?? 'Customer',
+      client_email: invoice.client_email ?? 'client@example.com',
+      invoice_reference: invoice.reference ?? invoice.id,
+      invoice_date: formatDate(invoice.created_at),
+      due_date: invoice.due_date ? formatDate(invoice.due_date) : formatDate(invoice.created_at),
+      items: itemMapped,
+      subtotal: formatCurrency(Number(invoice.subtotal ?? 0)),
+      vat: formatCurrency(Number(invoice.vat ?? 0)),
+      total: formatCurrency(Number(invoice.total ?? 0)),
+      notes: invoice.notes ?? 'Thank you for your business!',
     })
 
-    if (!res.ok) {
-      console.error('Failed to fetch invoice HTML:', await res.text())
-      throw new Error('Fetch failed')
-    }
+    // 6. Optional watermark for paid invoices
+    const finalHtml = invoice.status === 'paid'
+      ? html.replace(
+          '</body>',
+          `<div style="position:absolute;top:40%;left:35%;font-size:72px;color:#ccc;transform:rotate(-30deg);opacity:0.4;">PAID</div></body>`
+        )
+      : html
 
-    const html = await res.text()
+    // 7. Open in new window as preview
+    const previewWindow = window.open('', '_blank', 'width=1024,height=768')
+    if (!previewWindow) throw new Error('Popup blocked')
 
-    const container = document.createElement('div')
-    container.innerHTML = html
-    document.body.appendChild(container)
-
-    await html2pdf().from(container).save(`invoice-${invoiceId}.pdf`)
-    document.body.removeChild(container)
+    previewWindow.document.write(finalHtml)
+    previewWindow.document.title = `Invoice Preview`
+    previewWindow.document.close()
   } catch (err) {
-    console.error('Download error:', err)
-    alert('Could not download PDF.')
+    console.error('Preview error:', err)
+    alert('Could not preview invoice.')
   }
 }

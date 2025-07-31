@@ -56,7 +56,7 @@ export default function LandingPage() {
         <p className="text-lg text-gray-600 mb-6">Create and manage invoices with ease</p>
         <div className="space-x-4">
                     <Link
-            href="/quote/capture"
+            href="/quote/capture/"
             className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Create Quote
@@ -66,6 +66,12 @@ export default function LandingPage() {
             className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Create Invoice
+          </Link>
+          <Link
+            href="/products"
+            className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Product Management
           </Link>
 
           <Link

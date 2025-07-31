@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
-import InvoiceActions from '@/components/InvoiceActions'
-
+import Link from 'next/link'
 
 type Invoice = {
   id: string
@@ -41,7 +40,7 @@ export default function InvoiceListPage() {
   const unpaidInvoices = invoices.filter(i => i.status === 'unpaid').length
   const overdueInvoices = invoices.filter(i =>
     i.status === 'unpaid' &&
-    new Date(i.created_at).getTime() < Date.now() - 30 * 24 * 60 * 60 * 1000 // 30+ days
+    new Date(i.created_at).getTime() < Date.now() - 30 * 24 * 60 * 60 * 1000
   ).length
 
   if (loading) return <p className="p-10 text-center">Loading invoices...</p>
@@ -49,27 +48,14 @@ export default function InvoiceListPage() {
   return (
     <div className="min-h-screen bg-gray-50 text-black">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Stats */}
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white p-4 rounded shadow text-center">
-            <h2 className="text-lg font-bold">Total Invoices</h2>
-            <p className="text-2xl">{totalInvoices}</p>
-          </div>
-          <div className="bg-green-100 p-4 rounded shadow text-center">
-            <h2 className="text-lg font-bold">Paid</h2>
-            <p className="text-2xl text-green-700">{paidInvoices}</p>
-          </div>
-          <div className="bg-yellow-100 p-4 rounded shadow text-center">
-            <h2 className="text-lg font-bold">Unpaid</h2>
-            <p className="text-2xl text-yellow-700">{unpaidInvoices}</p>
-          </div>
-          <div className="bg-red-100 p-4 rounded shadow text-center">
-            <h2 className="text-lg font-bold">Overdue</h2>
-            <p className="text-2xl text-red-700">{overdueInvoices}</p>
-          </div>
+          <StatCard label="Total Invoices" value={totalInvoices} />
+          <StatCard label="Paid" value={paidInvoices} color="green" />
+          <StatCard label="Unpaid" value={unpaidInvoices} color="yellow" />
+          <StatCard label="Overdue" value={overdueInvoices} color="red" />
         </div>
 
-        {/* Table */}
         <h1 className="text-2xl font-bold mb-4">All Invoices</h1>
 
         <div className="overflow-x-auto">
@@ -98,7 +84,12 @@ export default function InvoiceListPage() {
                       ? format(new Date(invoice.paid_at), 'dd MMM yyyy')
                       : <span className="text-gray-400 italic">Not Paid</span>}
                   </td>
-                  <InvoiceActions invoice={invoice} />
+                  <td className="p-3 space-y-1 flex flex-col">
+                    <Link href={`/client-dashboard/invoices/view/${invoice.id}`}>
+                      <button className="text-blue-600 hover:underline">View</button>
+                    </Link>
+                  
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -108,3 +99,10 @@ export default function InvoiceListPage() {
     </div>
   )
 }
+
+const StatCard = ({ label, value, color = 'gray' }: { label: string, value: number, color?: string }) => (
+  <div className={`bg-${color}-100 p-4 rounded shadow text-center`}>
+    <h2 className="text-lg font-bold">{label}</h2>
+    <p className={`text-2xl text-${color}-700`}>{value}</p>
+  </div>
+)

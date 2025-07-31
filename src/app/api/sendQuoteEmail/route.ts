@@ -5,7 +5,7 @@ import { generateQuoteEmailHTML } from '@/lib/emailTemplates/quoteEmail'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 )
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   if (error || !quote) return new Response('Quote not found', { status: 404 })
 
-  const pdfUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/view-quote-pdf?quote_id=${quote.id}`
+  const pdfUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/view-quote-pdf?quote_id=${quote.id}`
   const html = generateQuoteEmailHTML(quote, pdfUrl)
 
   try {

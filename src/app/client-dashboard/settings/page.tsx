@@ -8,6 +8,7 @@ import Link from 'next/link'
 export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,7 +27,7 @@ export default function SettingsPage() {
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single()
 
       if (profileError) {
@@ -39,6 +40,47 @@ export default function SettingsPage() {
 
     fetchData()
   }, [])
+
+  const handleSaveSettings = async () => {
+    if (!user || !profile) return
+
+    setLoading(true)
+
+    const updates = {
+      currency: profile.currency,
+      vat_inclusive: profile.vat_inclusive,
+      vat_rate: profile.vat_rate,
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('user_id', user.id)
+
+    setLoading(false)
+
+    if (error) {
+      toast.error('Failed to save settings')
+    } else {
+      toast.success('Settings updated successfully')
+    }
+  }
+
+const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const target = e.target
+  const { name, type } = target
+
+  const newValue =
+    type === 'checkbox' && 'checked' in target
+      ? (target as HTMLInputElement).checked
+      : target.value
+
+  setProfile((prev: any) => ({
+    ...prev,
+    [name]: newValue
+  }))
+}
+
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
@@ -57,19 +99,68 @@ export default function SettingsPage() {
         )}
       </section>
 
-      {/* Company Info */}
-      <section className="bg-white p-4 rounded shadow">
-        <h2 className="text-lg font-semibold mb-2">Company Profile</h2>
+      {/* Company Info & VAT Settings */}
+      <section className="bg-white p-4 rounded shadow space-y-2">
+        <h2 className="text-lg font-semibold mb-2">Company Profile & VAT</h2>
         {profile ? (
           <>
             <p><strong>Company:</strong> {profile.company_name}</p>
             <p><strong>VAT Number:</strong> {profile.vat_number || 'N/A'}</p>
             <p><strong>Phone:</strong> {profile.phone}</p>
-            <Link href="/client-dashboard/profile/edit">
-              <button className="mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                Edit Profile
+
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block font-medium mb-1">Currency</label>
+                <select
+                  name="currency"
+                  value={profile.currency}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 p-2 rounded"
+                >
+                  <option value="ZAR">ZAR (R)</option>
+                  <option value="USD">USD ($)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1">VAT Rate (%)</label>
+                <input
+                  type="number"
+                  name="vat_rate"
+                  value={profile.vat_rate ?? 15}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.1"
+                  className="w-full border border-gray-300 p-2 rounded"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="vat_inclusive"
+                  checked={profile.vat_inclusive}
+                  onChange={handleChange}
+                />
+                <label className="font-medium">VAT Inclusive</label>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 mt-4">
+              <button
+                onClick={handleSaveSettings}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                disabled={loading}
+              >
+                {loading ? 'Saving...' : 'Save VAT Settings'}
               </button>
-            </Link>
+
+              <Link href="/client-dashboard/profile/edit">
+                <button className="bg-gray-100 border border-gray-300 px-4 py-2 rounded hover:bg-gray-200">
+                  Edit Full Profile
+                </button>
+              </Link>
+            </div>
           </>
         ) : (
           <p>Loading profile...</p>

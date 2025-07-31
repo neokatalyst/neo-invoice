@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient'
+import { generateInvoiceHTML } from '@/lib/pdfTemplates/invoiceTemplate'
 
 export async function downloadInvoiceFromFunction(invoiceId: string) {
   if (typeof window === 'undefined') return
@@ -6,29 +7,21 @@ export async function downloadInvoiceFromFunction(invoiceId: string) {
   try {
     const html2pdf = (await import('html2pdf.js')).default
 
-    const {
-      data: { session },
-    } = await supabase.auth.getSession()
+   await supabase.auth.getSession()
 
-    const functionsUrl =
-      process.env.NEXT_PUBLIC_SUPABASE_FUNCTION_URL ||
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`
 
-    const res = await fetch(
-      `${functionsUrl}/generate-invoice-pdf?invoice_id=${invoiceId}`,
-      {
-        headers: session?.access_token
-          ? { Authorization: `Bearer ${session.access_token}` }
-          : undefined,
-      }
-    )
 
-    if (!res.ok) {
-      console.error('Failed to fetch invoice HTML:', await res.text())
-      throw new Error('Fetch failed')
+    const { data: invoice, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .eq('id', invoiceId)
+      .single()
+
+    if (error || !invoice) {
+      throw new Error('Invoice not found')
     }
 
-    const html = await res.text()
+    const html = await generateInvoiceHTML(invoice)
 
     const container = document.createElement('div')
     container.innerHTML = html

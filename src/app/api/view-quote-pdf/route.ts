@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateQuoteHTML } from '@/lib/pdfTemplates/quoteTemplate'
+import type { Quote } from '@/lib/pdfTemplates/types'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,7 +26,19 @@ export async function GET(req: NextRequest) {
     return new Response('Quote not found', { status: 404 })
   }
 
-  const html = await generateQuoteHTML(quote)
+  let logoUrl = '/default-logo.png'
+
+  if (quote.logo_url) {
+    const { data: signed } = await supabaseAdmin.storage
+      .from('logos')
+      .createSignedUrl(quote.logo_url, 60 * 60)
+
+    if (signed?.signedUrl) {
+      logoUrl = signed.signedUrl
+    }
+  }
+
+  const html = generateQuoteHTML(quote as Quote, logoUrl)
 
   return new Response(html, {
     headers: {

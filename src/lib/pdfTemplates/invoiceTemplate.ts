@@ -31,36 +31,83 @@ export function generateInvoiceHTML({
     <tr>
       <td>${item.description}</td>
       <td style="text-align:center">${item.quantity}</td>
-      <td style="text-align:right">R ${item.price}</td>
-      <td style="text-align:right">R ${item.total}</td>
+      <td style="text-align:right">${item.price}</td>
+      <td style="text-align:right">${item.total}</td>
     </tr>
   `).join('');
 
   return `
   <html>
     <head>
+      <meta charset="utf-8" />
       <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 40px; background: #fff; color: #333; }
-        .header { display: flex; align-items: center; justify-content: space-between; }
-        .invoice-title { font-size: 32px; font-weight: bold; }
-        .company-info, .client-info { margin-top: 20px; line-height: 1.5; }
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-        td, th { border: 1px solid #eee; padding: 12px; }
-        th { background: #f7f7f7; text-align: left; }
-        .totals { margin-top: 30px; text-align: right; line-height: 1.8; }
-        .notes { margin-top: 40px; font-size: 14px; color: #555; }
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 40px;
+          background: #fff;
+          color: #333;
+        }
+        .header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .logo-container {
+          max-width: 200px;
+        }
+        .logo-container img {
+          max-height: 60px;
+          max-width: 100%;
+        }
+        .invoice-title {
+          font-size: 32px;
+          font-weight: bold;
+        }
+        .company-info, .client-info, .invoice-details {
+          margin-top: 20px;
+          line-height: 1.6;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 30px;
+        }
+        td, th {
+          border: 1px solid #eee;
+          padding: 12px;
+        }
+        th {
+          background: #f7f7f7;
+          text-align: left;
+        }
+        .totals {
+          margin-top: 30px;
+          text-align: right;
+          line-height: 1.8;
+        }
+        .notes {
+          margin-top: 40px;
+          font-size: 14px;
+          color: #555;
+        }
       </style>
     </head>
     <body>
       <div class="header">
-        <img src="${company_logo_url}" alt="Logo" height="60" />
+        <div class="logo-container">
+          <img src="${company_logo_url}" alt="Logo" />
+        </div>
         <div class="invoice-title">Invoice</div>
       </div>
       <div class="company-info">
-        <strong>${company_name}</strong><br />${company_address}
+        <strong>${company_name}</strong><br />
+        ${company_address}
       </div>
       <div class="client-info">
-        <strong>Bill To:</strong><br />${client_name}<br />${client_email}
+        <strong>Bill To:</strong><br />
+        ${client_name}<br />
+        ${client_email}
       </div>
       <div class="invoice-details">
         <p>
@@ -83,15 +130,14 @@ export function generateInvoiceHTML({
         </tbody>
       </table>
       <div class="totals">
-        <p>Subtotal: R ${subtotal}</p>
-        <p>VAT: R ${vat}</p>
-        <p><strong>Total: R ${total}</strong></p>
+        <p>Subtotal: ${subtotal}</p>
+        <p>VAT: ${vat}</p>
+        <p><strong>Total: ${total}</strong></p>
       </div>
       <div class="notes">
-        <strong>Notes:</strong><br />${notes}
+        <strong>Notes:</strong><br />
+        ${notes}
       </div>
     </body>
   </html>`;
 }
-
-

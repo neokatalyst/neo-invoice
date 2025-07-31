@@ -1,11 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
-import Header from '@/components/Header'
-import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
+import { supabase } from '@/lib/supabaseClient'
+import Header from '@/components/Header'
 
 type Quote = {
   id: string
@@ -40,41 +40,88 @@ export default function Page() {
     fetchQuotes()
   }, [])
 
-  const convertToInvoice = async (quote: Quote) => {
-    toast.loading('Converting...')
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return toast.error('Not signed in')
+ const convertToInvoice = async (quote: Quote) => {
+  toast.loading('Converting...')
 
-    const { data: invoice, error } = await supabase.from('invoices').insert({
-      user_id: user.id,
-      quote_id: quote.id,
-      client_name: quote.client_name,
-      client_email: quote.client_email,
-      items: quote.items,
-      total: quote.total,
-      status: 'unpaid',
-    }).select().single()
+  const {
+    data: { user },
+    error: userError
+  } = await supabase.auth.getUser()
 
-    if (error || !invoice) {
-      toast.dismiss()
-      return toast.error('Failed to convert quote')
-    }
+  if (userError || !user) {
+    toast.dismiss()
+    return toast.error('Not signed in')
+  }
 
-    const { error: updateError } = await supabase.from('quotes').update({
+  // ✅ Fetch profile to get logo_url
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('logo_url')
+    .eq('user_id', user.id)
+    .single()
+
+  if (profileError || !profile) {
+    toast.dismiss()
+    return toast.error('Profile logo missing')
+  }
+
+  const safeItems = Array.isArray(quote.items)
+    ? quote.items.map((item) => ({
+        description: item.description ?? '',
+        quantity: Number(item.quantity) || 0,
+        price: Number(item.price) || 0,
+        total: Number(item.total) || 0,
+      }))
+    : []
+
+  const timestamp = Date.now()
+  const reference = `INV${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${timestamp.toString().slice(-3)}`
+
+  const payload = {
+    user_id: user.id,
+    reference,
+    client_name: quote.client_name ?? '',
+    client_email: quote.client_email ?? '',
+    items: safeItems,
+    total: quote.total ?? 0,
+    status: 'unpaid',
+    logo_url: profile.logo_url, // ✅ include logo_url
+  }
+
+  console.log('📦 Invoice payload:', payload)
+
+  const { data: invoice, error } = await supabase
+    .from('invoices')
+    .insert(payload)
+    .select()
+    .single()
+
+  if (error || !invoice) {
+    toast.dismiss()
+    console.error('❌ Supabase insert error:', error, '\nPayload:', payload)
+    return toast.error('Failed to convert quote')
+  }
+
+  const { error: updateError } = await supabase
+    .from('quotes')
+    .update({
       status: 'converted',
       invoice_id: invoice.id,
       converted_at: new Date().toISOString(),
-    }).eq('id', quote.id)
+    })
+    .eq('id', quote.id)
 
-    if (updateError) {
-      toast.dismiss()
-      return toast.error('Failed to update quote')
-    }
-
+  if (updateError) {
     toast.dismiss()
-    toast.success('Converted to invoice')
-    router.refresh()
+    console.error('❌ Failed to update quote:', updateError)
+    return toast.error('Failed to update quote')
   }
+
+  toast.dismiss()
+  toast.success('Converted to invoice')
+  router.push('/client-dashboard/invoices')
+}
+
 
   const viewPdf = (quoteId: string) => {
     window.open(`/api/view-quote-pdf?quote_id=${quoteId}`, '_blank')

@@ -18,6 +18,8 @@ export default function Page() {
     address: '',
     vat_number: '',
     logo_url: '',
+    currency: 'ZAR',
+    vat_inclusive: true,
   })
   const [logoPreview, setLogoPreview] = useState<string>('/default-logo.png')
   const [loading, setLoading] = useState(false)
@@ -41,6 +43,8 @@ export default function Page() {
           address: data.address ?? '',
           vat_number: data.vat_number ?? '',
           logo_url: data.logo_url ?? '',
+          currency: data.currency ?? 'ZAR',
+          vat_inclusive: data.vat_inclusive ?? true,
         })
 
         if (data.logo_url) {
@@ -55,8 +59,14 @@ export default function Page() {
     fetchProfile()
   }, [router])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value })
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const target = e.target
+    const { name, type } = target
+    const newValue = type === 'checkbox' && 'checked' in target ? (target as HTMLInputElement).checked : target.value
+    setProfile(prev => ({
+      ...prev,
+      [name]: newValue
+    }))
   }
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,6 +121,8 @@ export default function Page() {
       address: profile.address,
       vat_number: profile.vat_number,
       logo_url: profile.logo_url,
+      currency: profile.currency,
+      vat_inclusive: profile.vat_inclusive,
       updated_at: new Date().toISOString(),
     }
 
@@ -123,7 +135,6 @@ export default function Page() {
       return
     }
 
-    // ✅ Update user_metadata with proper organisation_id
     const orgId = profile.company_name.trim().toLowerCase().replace(/\s+/g, '-')
     const { error: metaError } = await supabase.auth.updateUser({
       data: {
@@ -136,6 +147,26 @@ export default function Page() {
       toast.error('Metadata update failed: ' + metaError.message)
     } else {
       toast.success('Profile and metadata updated successfully')
+    }
+
+    if (profile.logo_url) {
+      const { error: invoiceUpdateError } = await supabase
+        .from('invoices')
+        .update({ logo_url: profile.logo_url })
+        .eq('user_id', user.id)
+
+      if (invoiceUpdateError) {
+        console.warn('⚠️ Failed to update invoices with new logo:', invoiceUpdateError.message)
+      }
+
+      const { error: quoteUpdateError } = await supabase
+        .from('quotes')
+        .update({ logo_url: profile.logo_url })
+        .eq('user_id', user.id)
+
+      if (quoteUpdateError) {
+        console.warn('⚠️ Failed to update quotes with new logo:', quoteUpdateError.message)
+      }
     }
 
     router.push('/profile')
@@ -158,6 +189,21 @@ export default function Page() {
           <Input label="Phone" name="phone" value={profile.phone} onChange={handleChange} type="tel" />
           <Textarea label="Address" name="address" value={profile.address} onChange={handleChange} />
           <Input label="VAT Number (optional)" name="vat_number" value={profile.vat_number} onChange={handleChange} />
+
+          <div>
+            <label className="block mb-1 font-medium">Currency</label>
+            <select name="currency" value={profile.currency} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded">
+              <option value="ZAR">ZAR (R)</option>
+              <option value="USD">USD ($)</option>
+              <option value="USD">EUR (€)</option>
+              <option value="USD">GBP (£)</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input type="checkbox" name="vat_inclusive" checked={profile.vat_inclusive} onChange={handleChange} />
+            <label className="font-medium">VAT Inclusive</label>
+          </div>
 
           <div>
             <label className="block mb-1 font-medium">Upload Logo</label>

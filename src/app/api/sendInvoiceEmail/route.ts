@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       return new Response('Missing client_email in invoice', { status: 400 })
     }
 
-    const pdfUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/view-invoice-pdf?invoice_id=${invoice_id}`
+    const pdfUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/view-invoice-pdf?invoice_id=${invoice_id}`
     const html = generateInvoiceEmailHTML(invoice as Invoice, pdfUrl)
 
     const from = process.env.RESEND_FROM_EMAIL || 'noreply@neokatalyst.co.za'

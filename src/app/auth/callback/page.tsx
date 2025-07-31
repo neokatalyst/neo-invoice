@@ -9,19 +9,39 @@ export default function AuthCallbackPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const handleAuth = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession()
+    const handleCallback = async () => {
+      const hash = window.location.hash.substring(1)
+      const params = new URLSearchParams(hash)
 
-      if (session) {
-        toast.success('Email confirmed!')
-        router.push('/profile')
+      const access_token = params.get('access_token')
+      const refresh_token = params.get('refresh_token')
+      const type = params.get('type')
+
+      if (!access_token || !refresh_token) {
+        toast.error('Missing authentication token')
+        return
+      }
+
+      const {  error } = await supabase.auth.setSession({
+        access_token,
+        refresh_token,
+      })
+
+      if (error) {
+        toast.error(error.message || 'Authentication failed')
       } else {
-        toast.error(error?.message || 'Could not confirm email')
+        if (type === 'signup') {
+          toast.success('Email confirmed! Welcome 🎉')
+          router.push('/profile/edit-profile') // force onboarding
+        } else {
+          toast.success('Signed in successfully!')
+          router.push('/')
+        }
       }
     }
 
-    handleAuth()
-  }, [])
+    handleCallback()
+  }, [router])
 
-  return <p>Confirming your email...</p>
+  return <p className="p-4 text-center">Confirming your email...</p>
 }
