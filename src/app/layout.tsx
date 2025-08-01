@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { Toaster } from 'react-hot-toast'
 import RouteSpinner from '@/components/RouteSpinner'
 import './globals.css'
+import InstallPrompt from '@/components/InstallPrompt'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 
@@ -31,11 +32,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en">
-      <body>
-        <Toaster position="top-right" />
-        <RouteSpinner />
-        {children}
-      </body>
+<body>
+  <Toaster position="top-right" />
+  <RouteSpinner />
+  <div className="min-h-screen w-full max-w-screen-md mx-auto px-4">
+    <InstallPrompt />
+    {children}
+  </div>
+</body>
     </html>
   )
 }
