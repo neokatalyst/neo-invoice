@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import ResponsiveLayout from '@/components/layouts/ResponsiveLayout'
 
 export default function SettingsPage() {
   const [user, setUser] = useState<any>(null)
@@ -82,7 +83,7 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
 }
 
 
-  return (
+  const content = (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
       <h1 className="text-2xl font-bold mb-4">Settings</h1>
 
@@ -192,4 +193,6 @@ const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
       </section>
     </div>
   )
+
+  return <ResponsiveLayout mobile={content} tablet={content} desktop={content} />
 }

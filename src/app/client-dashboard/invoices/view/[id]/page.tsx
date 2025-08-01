@@ -7,6 +7,7 @@ import InvoiceActions from '@/components/InvoiceActions'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import ResponsiveLayout from '@/components/layouts/ResponsiveLayout'
 
 type LineItem = {
   description: string
@@ -109,7 +110,7 @@ export default function InvoiceDetailPage() {
   if (loading) return <p className="p-10 text-center">Loading invoice...</p>
   if (!invoice) return <p className="p-10 text-center text-red-600">Invoice not found</p>
 
-  return (
+  const content = (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Invoice Detail</h1>
 
@@ -132,39 +133,37 @@ export default function InvoiceDetailPage() {
         )}
       </div>
 
-{invoice.items && invoice.items.length > 0 && (
-  <div className="mt-6">
-    <h2 className="text-lg font-semibold mb-2">Line Items</h2>
-    <table className="w-full border text-sm">
-      <thead className="bg-gray-100">
-        <tr>
-          <th className="p-2 text-left">Description</th>
-          <th className="p-2 text-right">Qty</th>
-          <th className="p-2 text-right">Unit Price</th>
-          <th className="p-2 text-right">Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        {invoice.items.map((item, idx) => (
-          <tr key={idx} className="border-t">
-            <td className="p-2">{item.description}</td>
-            <td className="p-2 text-right">{item.quantity}</td>
-<td className="p-2 text-right">
-  R {typeof item.unit_price === 'number' ? item.unit_price.toFixed(2) : '-'}
-</td>
-<td className="p-2 text-right">
-  R {typeof item.unit_price === 'number'
-    ? (item.quantity * item.unit_price).toFixed(2)
-    : '-'}
-</td>
-
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
-
+      {invoice.items && invoice.items.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-lg font-semibold mb-2">Line Items</h2>
+          <table className="w-full border text-sm">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="p-2 text-left">Description</th>
+                <th className="p-2 text-right">Qty</th>
+                <th className="p-2 text-right">Unit Price</th>
+                <th className="p-2 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {invoice.items.map((item, idx) => (
+                <tr key={idx} className="border-t">
+                  <td className="p-2">{item.description}</td>
+                  <td className="p-2 text-right">{item.quantity}</td>
+                  <td className="p-2 text-right">
+                    R {typeof item.unit_price === 'number' ? item.unit_price.toFixed(2) : '-'}
+                  </td>
+                  <td className="p-2 text-right">
+                    R {typeof item.unit_price === 'number'
+                      ? (item.quantity * item.unit_price).toFixed(2)
+                      : '-'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <div className="flex gap-2 mt-6 flex-wrap">
         {invoice.status !== 'paid' && (
@@ -172,7 +171,7 @@ export default function InvoiceDetailPage() {
             Mark as Paid
           </button>
         )}
-   <InvoiceActions invoice={invoice} />
+        <InvoiceActions invoice={invoice} />
         <label className="bg-gray-700 text-white px-4 py-2 rounded cursor-pointer">
           {uploading ? 'Uploading...' : 'Upload Proof of Payment'}
           <input
@@ -191,4 +190,6 @@ export default function InvoiceDetailPage() {
       </div>
     </div>
   )
+
+  return <ResponsiveLayout mobile={content} tablet={content} desktop={content} />
 }
