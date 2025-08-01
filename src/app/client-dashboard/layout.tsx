@@ -33,6 +33,7 @@ useEffect(() => {
 
 
   const navItems = [
+    { label: 'Home', href: '/landing' },
     { label: 'Dashboard', href: '/client-dashboard' },
     { label: 'Profile', href: '/client-dashboard/profile' },
     { label: 'Invoices', href: '/client-dashboard/invoices' },
@@ -40,14 +41,13 @@ useEffect(() => {
     { label: 'Subscription', href: '/client-dashboard/subscription' },
     { label: 'Settings', href: '/client-dashboard/settings' },
     { label: 'Broadcast', href: '/admin-dashboard/broadcast' },
-    { label: 'Home', href: '/landing' },
   ]
 
   return (
     <div className="min-h-screen bg-gray-100 text-black">
       <Header />
-      <div className="flex">
-        <aside className="w-64 bg-white shadow-md flex flex-col justify-between">
+      <div className="md:flex">
+        <aside className="hidden md:flex md:w-64 bg-white shadow-md flex-col justify-between">
           <div>
             <div className="p-4 font-bold text-xl border-b">Neo Invoice</div>
             <nav className="flex flex-col p-4 space-y-2">

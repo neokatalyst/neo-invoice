@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
+import ResponsiveLayout from '@/components/layouts/ResponsiveLayout'
 
 type Profile = {
   id: string
@@ -62,14 +63,15 @@ export default function UserListPage() {
     fetchUsers()
   }, [])
 
-  return (
+  if (loading) return <p className="p-10 text-center">Loading users...</p>
+
+  const content = (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Team Members</h1>
 
-      {loading && <p>Loading users...</p>}
       {error && <p className="text-red-600">{error}</p>}
 
-      {!loading && !error && (
+      {!error && (
         <table className="w-full table-auto border border-gray-300 rounded">
           <thead>
             <tr className="bg-gray-100">
@@ -98,22 +100,22 @@ export default function UserListPage() {
         </table>
       )}
 
-<div className="mt-6">
-  <Link href="/client-dashboard/profile/users/invite">
-    <button className="bg-green-800 text-white px-4 py-2 rounded">
-      + Invite User
-    </button>
-  </Link>
+      <div className="mt-6">
+        <Link href="/client-dashboard/profile/users/invite">
+          <button className="bg-green-800 text-white px-4 py-2 rounded">
+            + Invite User
+          </button>
+        </Link>
 
-<div className="mt-6"></div>
-  <Link href="/profile">
-        <button className="bg-gray-800 text-white px-4 py-2 rounded">
-          View Profile
-        </button>
-</Link>
-</div>
-
-
+        <div className="mt-6" />
+        <Link href="/profile">
+          <button className="bg-gray-800 text-white px-4 py-2 rounded">
+            View Profile
+          </button>
+        </Link>
+      </div>
     </div>
   )
+
+  return <ResponsiveLayout mobile={content} tablet={content} desktop={content} />
 }

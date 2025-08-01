@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { previewQuoteFromFunction } from '@/lib/previewQuoteFromFunction'
+import ResponsiveLayout from '@/components/layouts/ResponsiveLayout'
 
 type Quote = {
   id: string
@@ -113,7 +114,7 @@ export default function QuoteDetailPage() {
   if (loading) return <p className="p-10 text-center">Loading quote...</p>
   if (!quote) return <p className="p-10 text-center text-red-600">Quote not found</p>
 
-  return (
+  const content = (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Quote Detail</h1>
 
@@ -155,4 +156,6 @@ export default function QuoteDetailPage() {
       </div>
     </div>
   )
+
+  return <ResponsiveLayout mobile={content} tablet={content} desktop={content} />
 }
