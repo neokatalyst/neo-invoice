@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, TextInput, Button, Alert } from 'react-native'
-import { supabase } from '../lib/supabaseClient'
 import { useNavigation } from '@react-navigation/native'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function CreateInvoiceScreen() {
   const [clientName, setClientName] = useState('')
@@ -16,7 +16,6 @@ export default function CreateInvoiceScreen() {
       const { data: userData } = await supabase.auth.getUser()
       const id = userData.user?.id
       if (!id) return
-
       setUserId(id)
 
       const { count, error } = await supabase
@@ -54,4 +53,36 @@ export default function CreateInvoiceScreen() {
     if (error) {
       Alert.alert('Error saving invoice', error.message)
     } else {
-      Alert.al
+      Alert.alert('Success', 'Invoice created!')
+      navigation.goBack()
+    }
+  }
+
+  return (
+    <View style={{ padding: 20 }}>
+      <Text style={{ fontSize: 24, marginBottom: 20 }}>Create Invoice</Text>
+      <TextInput
+        placeholder="Client Name"
+        value={clientName}
+        onChangeText={setClientName}
+        style={{ borderBottomWidth: 1, marginBottom: 10 }}
+      />
+      <TextInput
+        placeholder="Client Email"
+        value={clientEmail}
+        onChangeText={setClientEmail}
+        style={{ borderBottomWidth: 1, marginBottom: 10 }}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      <TextInput
+        placeholder="Amount"
+        value={amount}
+        onChangeText={setAmount}
+        style={{ borderBottomWidth: 1, marginBottom: 20 }}
+        keyboardType="numeric"
+      />
+      <Button title="Save Invoice" onPress={handleSubmit} />
+    </View>
+  )
+}

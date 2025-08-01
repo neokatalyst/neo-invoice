@@ -1,25 +1,22 @@
 import React, { useState } from 'react'
 import { View, Text, TextInput, Button, Alert } from 'react-native'
-import { supabase } from '../lib/supabaseClient'
+import { supabase } from '@/lib/supabaseClient'
 import { useNavigation } from '@react-navigation/native'
 
-export default function RegisterScreen() {
+export default function LoginScreen() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const navigation = useNavigation()
 
-  const handleRegister = async () => {
-    const { error } = await supabase.auth.signUp({ email, password })
-    if (error) Alert.alert('Signup error', error.message)
-    else {
-      Alert.alert('Success', 'Check your email to confirm your account.')
-      navigation.navigate('Login')
-    }
+  const handleLogin = async () => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) Alert.alert('Login error', error.message)
+    else navigation.navigate('Dashboard' as never)
   }
 
   return (
     <View style={{ padding: 20 }}>
-      <Text style={{ fontSize: 24 }}>Register</Text>
+      <Text style={{ fontSize: 24 }}>Log In</Text>
       <TextInput
         placeholder="Email"
         value={email}
@@ -34,7 +31,10 @@ export default function RegisterScreen() {
         onChangeText={setPassword}
         style={{ borderBottomWidth: 1, marginBottom: 20 }}
       />
-      <Button title="Register" onPress={handleRegister} />
+      <Button title="Login" onPress={handleLogin} />
+      <Text style={{ marginTop: 10 }} onPress={() => navigation.navigate('Register' as never)}>
+        Don't have an account? Register
+      </Text>
     </View>
   )
 }

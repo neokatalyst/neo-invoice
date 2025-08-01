@@ -22,6 +22,6 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-"exclude": ["node_modules", "neo-invoice-mobile", "screens", "supabase/functions", ".next"]
-  
+  "exclude": ["node_modules", "neo-invoice-mobile", "supabase/functions", ".next"]
+
 }

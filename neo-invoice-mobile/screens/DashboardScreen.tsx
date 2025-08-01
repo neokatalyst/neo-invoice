@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { View, Text, FlatList, Button, Alert } from 'react-native'
-import { supabase } from '../lib/supabaseClient'
-import InvoiceCard from '../components/InvoiceCard'
 import { useNavigation } from '@react-navigation/native'
+import { supabase } from '@/lib/supabaseClient'
+import InvoiceCard from '../components/InvoiceCard'
 
 export default function DashboardScreen() {
-  const [invoices, setInvoices] = useState([])
+  const [invoices, setInvoices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const navigation = useNavigation()
 
@@ -30,14 +30,14 @@ export default function DashboardScreen() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    navigation.reset({ index: 0, routes: [{ name: 'Login' }] })
+    navigation.reset({ index: 0, routes: [{ name: 'Login' as never }] })
   }
 
   const handleNewInvoice = () => {
     if (invoices.length >= 10) {
       Alert.alert('Limit reached', 'You can only create 10 invoices on the free plan.')
     } else {
-      navigation.navigate('CreateInvoice')
+      navigation.navigate('CreateInvoice' as never)
     }
   }
 
@@ -61,3 +61,5 @@ export default function DashboardScreen() {
         </>
       )}
     </View>
+  )
+}
