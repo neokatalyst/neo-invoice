@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import ResponsiveLayout from '@/components/layouts/ResponsiveLayout'
 
 export default function Page() {
   const [invoiceCount, setInvoiceCount] = useState<number>(0)
@@ -37,9 +38,12 @@ export default function Page() {
     fetchStats()
   }, [])
 
-  if (loading) return <p className="p-4">Loading stats...</p>
+  if (loading) {
+    const loadingContent = <p className="p-4">Loading stats...</p>
+    return <ResponsiveLayout mobile={loadingContent} tablet={loadingContent} desktop={loadingContent} />
+  }
 
-  return (
+  const content = (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Link href="/client-dashboard/invoices" className="hover:opacity-80 transition">
         <StatCard title="Total Invoices" count={invoiceCount} />
@@ -49,6 +53,8 @@ export default function Page() {
       </Link>
     </div>
   )
+
+  return <ResponsiveLayout mobile={content} tablet={content} desktop={content} />
 }
 
 const StatCard = ({ title, count }: { title: string; count: number }) => (

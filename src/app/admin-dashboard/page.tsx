@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import toast from 'react-hot-toast'
+import ResponsiveLayout from '@/components/layouts/ResponsiveLayout'
 
 export default function AdminDashboardHome() {
   const [clientCount, setClientCount] = useState<number>(0)
@@ -40,15 +41,20 @@ export default function AdminDashboardHome() {
     fetchAdminStats()
   }, [])
 
-  if (loading) return <p className="p-4">Loading admin stats...</p>
+  if (loading) {
+    const loadingContent = <p className="p-4">Loading admin stats...</p>
+    return <ResponsiveLayout mobile={loadingContent} tablet={loadingContent} desktop={loadingContent} />
+  }
 
-  return (
+  const content = (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <AdminStatCard title="Total Clients" count={clientCount} />
       <AdminStatCard title="Total Invoices" count={invoiceCount} />
       <AdminStatCard title="Total Quotes" count={quoteCount} />
     </div>
   )
+
+  return <ResponsiveLayout mobile={content} tablet={content} desktop={content} />
 }
 
 const AdminStatCard = ({ title, count }: { title: string; count: number }) => (
