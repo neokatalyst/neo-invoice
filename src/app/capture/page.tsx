@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthRedirect } from '@/lib/useAuthRedirect'
 import Header from '@/components/Header'
+import ResponsiveLayout from '@/components/layouts/ResponsiveLayout'
 import ProductSelector from '@/components/ProductSelector'
 import { Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -128,7 +129,7 @@ export default function CreateInvoicePage() {
     setLoading(false)
   }
 
-  return (
+  const content = (
     <div className="min-h-screen bg-gray-50 text-black">
       <Header />
       <div className="max-w-3xl mx-auto px-4 py-8">
@@ -224,4 +225,6 @@ export default function CreateInvoicePage() {
       </div>
     </div>
   )
+
+  return <ResponsiveLayout mobile={content} tablet={content} desktop={content} />
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Header from '@/components/Header'
+import ResponsiveLayout from '@/components/layouts/ResponsiveLayout'
 import toast from 'react-hot-toast'
 
 export default function ProductsPage() {
@@ -42,7 +43,7 @@ export default function ProductsPage() {
     }
   }
 
-  return (
+  const content = (
     <div className="min-h-screen bg-gray-50 text-black">
       <Header />
       <div className="max-w-md mx-auto px-4 py-12">
@@ -92,4 +93,6 @@ export default function ProductsPage() {
       </div>
     </div>
   )
+
+  return <ResponsiveLayout mobile={content} tablet={content} desktop={content} />
 }
