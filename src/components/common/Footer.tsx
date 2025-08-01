@@ -1,7 +1,14 @@
+import ResponsiveLayout from '@/components/layouts/ResponsiveLayout'
+import MobileFooter from './MobileFooter'
+import TabletFooter from './TabletFooter'
+import DesktopFooter from './DesktopFooter'
+
 export default function Footer() {
   return (
-    <footer className="w-full bg-white py-6 text-center text-gray-500 text-sm border-t">
-      &copy; {new Date().getFullYear()} Neo-Invoice. All rights reserved.
-    </footer>
+    <ResponsiveLayout
+      mobile={<MobileFooter />}
+      tablet={<TabletFooter />}
+      desktop={<DesktopFooter />}
+    />
   )
 }

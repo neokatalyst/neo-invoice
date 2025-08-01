@@ -4,18 +4,18 @@ import { ReactNode, useEffect, useState } from 'react'
 
 interface Props {
   mobile: ReactNode
-  centered: ReactNode
+  tablet: ReactNode
   desktop: ReactNode
 }
 
-export default function ResponsiveLayout({ mobile, centered, desktop }: Props) {
-  const [layout, setLayout] = useState<'mobile' | 'centered' | 'desktop'>('desktop')
+export default function ResponsiveLayout({ mobile, tablet, desktop }: Props) {
+  const [layout, setLayout] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
 
   useEffect(() => {
     const updateLayout = () => {
       const width = window.innerWidth
       if (width < 640) setLayout('mobile')
-   //   else if (width >= 640 && width < 1024) setLayout('centered')
+      else if (width >= 640 && width < 1024) setLayout('tablet')
       else setLayout('desktop')
     }
 
@@ -25,6 +25,6 @@ export default function ResponsiveLayout({ mobile, centered, desktop }: Props) {
   }, [])
 
   if (layout === 'mobile') return <>{mobile}</>
- // if (layout === 'centered') return <>{centered}</>
+  if (layout === 'tablet') return <>{tablet}</>
   return <>{desktop}</>
 }
