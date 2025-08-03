@@ -8,11 +8,8 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Define dark theme vars if needed */
-  }
-}
+
+
 
 /* Basic reset */
 html,

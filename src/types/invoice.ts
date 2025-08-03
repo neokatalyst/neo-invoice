@@ -15,3 +15,5 @@ export type Invoice = {
   items?: InvoiceItem[]
   notes?: string
 }
+
+

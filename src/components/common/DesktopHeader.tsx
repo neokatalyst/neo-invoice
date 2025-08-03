@@ -8,8 +8,8 @@ export default function DesktopHeader() {
   const { userName, handleSignOut } = useUserInfo()
 
   return (
-    <header className="w-full bg-white shadow py-6">
-      <div className="w-full max-w-6xl mx-auto px-6 flex justify-between items-center">
+    <header className="w-full bg-white shadow py-6 px-4">
+      <div className="max-w-screen-2xl mx-auto flex justify-between items-center">
         <Link href="/" className="text-2xl font-bold">
           Neo-Invoice
         </Link>

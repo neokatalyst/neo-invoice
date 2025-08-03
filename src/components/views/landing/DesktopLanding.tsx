@@ -1,15 +1,12 @@
 'use client'
 
+import PageWrapper from '@/components/layouts/PageWrapper'
 import Link from 'next/link'
-import Header from '@/components/common/Header'
-import Footer from '@/components/common/Footer'
 
 export default function DesktopLanding() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-between">
-      <Header />
-
-      <main className="w-full max-w-6xl mx-auto px-6 py-12 text-center flex-grow">
+    <PageWrapper maxWidth="2xl">
+      <div className="text-center py-12">
         <h2 className="text-5xl font-bold mb-4">Welcome to Neo-Invoice</h2>
         <p className="text-lg text-gray-600 mb-10">Create and manage invoices with ease</p>
 
@@ -27,9 +24,7 @@ export default function DesktopLanding() {
             Dashboard
           </Link>
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </div>
+    </PageWrapper>
   )
 }

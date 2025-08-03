@@ -9,7 +9,7 @@ interface FullWidthLayoutProps {
 export default function FullWidthLayout({ children }: FullWidthLayoutProps) {
   return (
     <div className="w-full min-h-screen bg-gray-50">
-      <div className="w-full px-0 md:px-4 lg:px-8">{children}</div>
+      <div className="w-full max-w-screen-2xl mx-auto px-4">{children}</div>
     </div>
   )
 }

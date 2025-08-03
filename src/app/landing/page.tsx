@@ -7,10 +7,10 @@ import DesktopLanding from '@/components/views/landing/DesktopLanding'
 
 export default function LandingPage() {
   return (
-      <ResponsiveLayout
-        desktop={<DesktopLanding />}
-        tablet={<TabletLanding />}
-        mobile={<MobileLanding />}
-      />
-    )
-  }
+    <ResponsiveLayout
+      desktop={<DesktopLanding />}
+      tablet={<TabletLanding />}
+      mobile={<MobileLanding />}
+    />
+  )
+}
